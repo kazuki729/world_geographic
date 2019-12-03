@@ -1,0 +1,242 @@
+class HomeController < ApplicationController
+
+  require 'rubygems'
+  require 'rmagick'
+  require 'benchmark' # 処理時間計測用
+  require 'date' #日時取得用
+  require 'objspace'
+  require 'time'
+
+  # memo = ObjectSpace.memsize_of(@country_list) / 1024.00
+
+
+  @flg = false # 画像処理アクションが来た時にtrue
+  $filepath = "public/country.txt"
+
+  def top
+
+  end
+  
+  #画像透明化のバッチ処理アクション
+  def batch_skelton()
+    #================================================
+    # input_dir = "public/country_region/" #入力フォルダ
+    # output_dir = "public/skelton_image/" #出力フォルダ
+    input_dir = "public/入力フォルダ/" #入力フォルダ
+    output_dir = "public/出力フォルダ/" #出力フォルダ
+    #================================================
+    if params[:skelton]==nil
+      render 'home/top'
+      return
+    end
+    files = []
+    files = list_files(input_dir)
+    completed=0
+    start_time = Time.now
+    files.each do |filename|
+      puts "進行状況：#{completed}/#{files.length}(#{completed*100/files.length}%)"
+      img = Magick::Image.read("#{input_dir}/#{filename}").first
+      skelton_image(img)
+      img = img.matte_floodfill(0, 0)
+      img.write("#{output_dir}#{filename}")
+      img.destroy! # メモリ解放
+      completed += 1
+    end
+    sec = Time.now - start_time
+    day = sec.to_i / 86400
+    timer = (Time.parse("1/1") + (sec - day * 86400)).strftime("#{day}日%H時間%M分%S秒")
+    puts "進行状況：#{files.length}/#{files.length}(100%)"
+    puts "----------------------------------"
+    puts "バッチ処理完了"
+    puts "入力フォルダ：#{input_dir}"
+    puts "出力フォルダ：#{output_dir}"
+    puts "処理ファイル数：#{files.length}"
+    puts "処理時間：#{timer}"
+    puts "----------------------------------"
+    redirect_to '/'
+  end
+
+  #ディレクトリ以下のファイルを取得
+  def list_files(dirpath)
+    fileplace = []
+    Dir.foreach(dirpath) do |file| #dirpath以下のファイルを取得
+      if file.include?(".png") #png拡張子のみ取得
+        fileplace << file
+      end
+    end
+    return fileplace
+  end
+
+  #緑の領域以外を透明にする関数
+  #緑の領域以外の場所を全て青色で塗った後、青を全て透明にする
+  def skelton_image(img)
+    img.columns.to_i.times do |x|
+      img.rows.to_i.times do |y|
+        unless img.export_pixels(x,y,1,1)[0].to_i == 0 \
+            && img.export_pixels(x,y,1,1)[1].to_i == 65535
+            img.pixel_color(x,y,Magick::Pixel.new(0,0,65535))
+        end
+      end
+    end
+  end
+
+  def proccess
+    if params[:position]==nil
+      return
+    end
+    # ビューに返すインスタンス変数
+    @flg = true # ビューでフラグにより判断
+    @top = params[:top]
+    @left = params[:left]
+    @width = params[:width]
+    @height = params[:height]
+    @country = params[:country]
+    @capital = params[:capital]
+    @register = true # ビューの登録モードON
+
+    # img = Magick::ImageList.new('public/temp.jpg') # 画像読み込み
+    # img = img.quantize(256, Magick::RGBColorspace) # 処理時間長いからなし！！
+    img = Magick::Image.read('public/country_img/world_map.png').first
+    #---------------------------------------------------
+    #ビューから座標を受け取る｛例｝x1,y1,x2,y2,x3,y3...
+    array = params[:position].split(",")
+    pos_arr = []
+    x = 0
+    (array.length/2).times do |i| #2要素ずつ取得して配列にする
+      pos_arr << [array[i+x].to_i, array[i+x+1].to_i]
+      x += 1
+    end
+    #---------------------------------------------------
+    country_pos = []
+    # pix_check(x_pos, y_pos, img,country_pos) # 境界線で囲まれた領域を緑で塗る
+    pix_check(pos_arr, img,country_pos) # 境界線で囲まれた領域を緑で塗る
+    skelton_image(img)
+    img = img.matte_floodfill(0, 0)
+    # img = img.matte_floodfill(100, 100) # (100,100)のピクセルと同じ色は透明にする
+    img.write('public/テスト画像.png') # 画像保存
+    img.write("public/country_img/#{@country}.png") # 画像保存
+    File.open($filepath, "a") do |f|
+      f.puts(@country.to_s + "/" + @capital.to_s + "/" + country_pos.to_s)
+    end
+    t=Time.new
+    time_str = t.strftime("%Y-%m-%d %H:%M:%S") # 時間を文字列に変換
+    File.open("public/history.txt", "a") do |f|
+      f.puts(time_str + " " + @country.to_s + "を追加しました．")
+    end
+    
+    render 'home/top'
+    puts "-----------------INFO-----------------------------"
+    puts "画像サイズ：#{img.columns} x #{img.rows}"
+    puts "入力座標：#{pos_arr}"
+    puts "proccessアクション実行."
+    puts "--------------------------------------------------"
+    img.destroy! # メモリ解放
+  end
+  
+  # 近傍画素チェック＆描画
+  def pix_check(array, img, country_pos)
+    # array = [[col,row]] #2次元配列で定義
+    temp=[] #あとで2次元配列で使う
+    search_px = 0
+    draw_px = 0
+    #=============================================
+    #境界線のR値は42405
+    #フィンランドの境界線に43176があるため、補完
+    #=============================================
+    start_time = Time.now
+    while array.length > 0 do
+      puts "array_length:#{array.length}"
+      array.each do |arr|
+        # 左
+        if (arr[0]-1 >= 0) && (arr[1] >= 0) # 調べる座標がマイナスなら調べない
+          if img.export_pixels(arr[0]-1,arr[1],1,1)[0].to_i != 42405 \
+              && img.export_pixels(arr[0]-1,arr[1],1,1)[0].to_i != 43176 \
+                    && img.export_pixels(arr[0]-1,arr[1],1,1)[1].to_i != 65535
+            img.pixel_color(arr[0]-1,arr[1],Magick::Pixel.new(0,65535,0))
+            temp<<[arr[0]-1,arr[1]]
+            puts "左"
+          end
+        end
+        # 上
+        if (arr[0] >= 0) && (arr[1]-1 >= 0)
+          if img.export_pixels(arr[0],arr[1]-1,1,1)[0].to_i != 42405 \
+              && img.export_pixels(arr[0],arr[1]-1,1,1)[0].to_i != 43176 \
+                    && img.export_pixels(arr[0],arr[1]-1,1,1)[1].to_i != 65535
+            img.pixel_color(arr[0],arr[1]-1,Magick::Pixel.new(0,65535,0))
+            temp<<[arr[0],arr[1]-1]
+            puts "上"
+          end
+        end
+        # 右
+        if (arr[0]+1 >= 0) && (arr[1] >= 0)
+          if img.export_pixels(arr[0]+1,arr[1],1,1)[0].to_i != 42405 \
+              && img.export_pixels(arr[0]+1,arr[1],1,1)[0].to_i != 43176 \
+                    && img.export_pixels(arr[0]+1,arr[1],1,1)[1].to_i != 65535
+            img.pixel_color(arr[0]+1,arr[1],Magick::Pixel.new(0,65535,0))
+            temp<<[arr[0]+1,arr[1]]
+            puts "➡"
+          end
+        end
+        # 下
+        if (arr[0] >= 0) && (arr[1]+1 >= 0)
+          if img.export_pixels(arr[0],arr[1]+1,1,1)[0].to_i != 42405 \
+              && img.export_pixels(arr[0],arr[1]+1,1,1)[0].to_i != 43176 \
+                    && img.export_pixels(arr[0],arr[1]+1,1,1)[1].to_i != 65535
+            img.pixel_color(arr[0],arr[1]+1,Magick::Pixel.new(0,65535,0))
+            temp<<[arr[0],arr[1]+1]
+            puts "下"
+          end
+        end
+        search_px += 4
+      end
+      array = temp
+      if temp !=[]
+        country_pos << temp #塗った座標を全部記録
+      end
+      draw_px += temp.length
+      temp=[]
+    end
+    puts "============================"
+    puts "検索した画素数：#{search_px}"
+    puts "塗った画素数：#{draw_px}(#{Math.sqrt(draw_px).to_i}x#{Math.sqrt(draw_px).to_i})"
+    puts "処理時間：#{Time.now-start_time}秒"
+    puts "============================"
+  end
+
+  # 国データを削除する
+  def remove_country
+    if params[:country]==nil
+      render 'home/top'
+      return
+    end
+    @register = true # ビューの登録モードON
+    @delete_country = params[:country]
+    write_data = []
+    File.open($filepath, mode = "rt"){|f|
+      f.each_line{|line|
+        arr = line.split("/")
+        if arr[0] == @delete_country
+          # 削除データ
+        else
+          # 削除対象外のデータ
+          write_data << line # 書き込むデータを配列にする
+        end
+      }
+    }
+    File.open($filepath, "w") do |f|
+      write_data.each do |line|
+        f.puts(line)
+      end
+    end
+    File.delete("public/country_img/#{@delete_country}.png") # 削除対象国の画像ファイル削除
+    puts "#{@delete_country}に関するデータを削除しました"
+
+    t=Time.new
+    time_str = t.strftime("%Y-%m-%d %H:%M:%S") # 時間を文字列に変換
+    File.open("public/history.txt", "a") do |f|
+      f.puts(time_str + " " + @delete_country.to_s + "を削除しました．")
+    end
+    # ビュー
+    render 'home/top'
+  end
+end
