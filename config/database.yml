@@ -22,5 +22,4 @@ test:
 
 production:
   <<: *default
-  # database: db/production.sqlite3 #HEROKU対応
-  adapter: postgresql
+  database: db/production.sqlite3
