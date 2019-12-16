@@ -1,0 +1,52 @@
+<!--
+<div class="container">
+    <% provide(:title, "Log in") %>
+    <h1 class="text-center">Log in</h1>
+
+    <div class="row">
+    <div class="col-md-6 offset-md-3">
+        <%= form_for(:session, url: login_path) do |f| %>
+
+        <%= f.label :email %>
+        <%= f.email_field :email, class: 'form-control' %>
+
+        <%= f.label :password %>
+        <%= f.password_field :password, class: 'form-control mb-3' %>
+
+        <%= f.submit "Log in", class: "btn btn-primary" %>
+        <% end %>
+
+        <p>New user? <%= link_to "Sign up now!", signup_path %></p>
+    </div>
+    </div>
+</div>
+-->
+<div class="login-inner">
+    <!--<h1 class="text-white font-weight-bold m-2" style="border: 1px solid white; display:inline-block; background-color:gray;">WorldGeographic</h1>
+    -->
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mt-5">
+                <!-- ここに説明書き -->
+                <h1 class="text-white font-weight-bold">世界地図を</h1>
+                <h1 class="text-white font-weight-bold">マスターしよう！！</h1>
+                <h3 class="text-white">国の場所、首都を覚えて腕試しができる！</h3>
+            </div>
+            <div class="col-md-4 offset-md-1 text-white font-weight-bold mt-4">
+                <% provide(:title, "Log in") %>
+                <h1 style="text-align:center;">Log in</h1>
+                <%= form_for(:session, url: login_path) do |f| %>
+
+                    <%= f.label :email %>
+                    <%= f.email_field :email, class: 'form-control' %>
+
+                    <%= f.label :password %>
+                    <%= f.password_field :password, class: 'form-control mb-3' %>
+
+                    <%= f.submit "Log in", class: "btn btn-primary input-form bg-success font-weight-bold" %>
+                    <%= link_to "（Signup）", signup_path, class: 'text-white float-right font-lg' %>
+                <% end %>
+            </div>
+        </div>
+    </div>
+</div>

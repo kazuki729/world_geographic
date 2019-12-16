@@ -20,6 +20,9 @@ gem 'jbuilder', '~> 2.7'
 
 gem 'jquery-rails'
 gem 'rmagick'
+gem 'bcrypt', '3.1.12'
+gem 'rails-controller-testing'
+
 # gem "browserify-rails"
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'

@@ -7,5 +7,12 @@ Rails.application.routes.draw do
   post '/remove' =>'home#remove_country'
   get '/batch_skelton' =>'home#batch_skelton'
   post '/batch_skelton' =>'home#batch_skelton'
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  get  '/signup',  to: 'users#new'
+  post '/signup',  to: 'users#create'
+  get    '/login',   to: 'sessions#new'
+  post   '/login',   to: 'sessions#create'
+  delete '/logout',  to: 'sessions#destroy'
+
+  get '/UpdateDB' =>'home#UpdateDB'
+  resources :users #usersに関する標準アクションが用意される
 end

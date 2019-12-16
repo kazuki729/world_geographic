@@ -1,0 +1,30 @@
+<% if @user.errors.any? %>
+  <div id="error_explanation">
+    <ul>
+    <% @user.errors.full_messages.each do |msg| %>
+      <% if msg =="Password confirmation doesn't match Password" %>
+        <% msg="パスワードが一致しません" %>
+      <% elsif msg=="Name can't be blank" %>
+        <% msg="名前を入力してください" %>
+      <% elsif msg=="Email can't be blank" %>
+        <% msg="メールアドレスを入力してください" %>
+      <% elsif msg=="Email is invalid" %>
+        <% if @user.errors.full_messages.include?("Email can't be blank")==false %>
+          <% msg="メールフォーマットが正しくありません" %>
+        <% else %>
+          <% next %>
+        <% end %>
+      <% elsif msg=="Password can't be blank" %>
+        <% msg="パスワードを入力してください" %>
+      <% elsif msg=="Password is too short (minimum is 6 characters)" %>
+        <% msg="パスワードは6文字以上入力してください" %>
+      <% elsif msg=="Email has already been taken" %>
+        <% msg="メールアドレスは既に登録されています" %>
+      <% elsif msg=="" %>
+        <% msg="" %>
+      <% end %>
+      <li><%= msg %></li>
+    <% end %>
+    </ul>
+  </div>
+<% end %>

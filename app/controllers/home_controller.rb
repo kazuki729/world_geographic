@@ -10,11 +10,35 @@ class HomeController < ApplicationController
   # memo = ObjectSpace.memsize_of(@country_list) / 1024.00
 
 
-  @flg = false # 画像処理アクションが来た時にtrue
   $filepath = "public/country.txt"
 
   def top
+    #action:proccess経由で来た時は、params[]を持っている
+    #画像の拡大・縮小・移動情報を保持するため
+    @register = params[:register]
+    @top = params[:top]
+    @left = params[:left]
+    @width = params[:width]
+    @height = params[:height]
+    @country = params[:country] #管理モードからデータを変更した際の該当国
+    @capital = params[:capital] #管理モードからデータを変更した際の該当首都
+    @ClearGame1 = "" #game1のクリア国を格納(場所➡国名)
+    @ClearGame2 = "" #game2のクリア国を格納(国名➡首都)
 
+    #Gameテーブルからログインユーザーのクリア状況を取得
+    if logged_in?
+      game = Game.find_by(user_id: current_user.id)
+      puts "ログインユーザーだから、DB問い合わせ！！user_id:#{current_user.id} game:#{game}"
+      if game!=nil #データがあるなら値をセット
+        puts "値取得開始"
+        @ClearGame1 = game.country
+        @ClearGame2 = game.capital
+        puts "値ゲット：game1=>#{@ClearGame1} game2:=>#{@ClearGame2}"
+      end
+      puts "ログインユーザーだから、ゲーム画面へ！！user_id:#{current_user.id}"
+    else
+      redirect_to login_path
+    end
   end
   
   #画像透明化のバッチ処理アクション
@@ -26,7 +50,7 @@ class HomeController < ApplicationController
     output_dir = "public/出力フォルダ/" #出力フォルダ
     #================================================
     if params[:skelton]==nil
-      render 'home/top'
+      redirect_to '/'
       return
     end
     files = []
@@ -36,7 +60,8 @@ class HomeController < ApplicationController
     files.each do |filename|
       puts "進行状況：#{completed}/#{files.length}(#{completed*100/files.length}%)"
       img = Magick::Image.read("#{input_dir}/#{filename}").first
-      skelton_image(img)
+      # skelton_image(img)
+      image_color_change(img)
       img = img.matte_floodfill(0, 0)
       img.write("#{output_dir}#{filename}")
       img.destroy! # メモリ解放
@@ -80,12 +105,25 @@ class HomeController < ApplicationController
     end
   end
 
+  #緑の領域を別の色に変更
+  def image_color_change(img)
+    img.columns.to_i.times do |x|
+      img.rows.to_i.times do |y|
+        if img.export_pixels(x,y,1,1)[0].to_i == 0 \
+            && img.export_pixels(x,y,1,1)[1].to_i == 65535
+            img.pixel_color(x,y,Magick::Pixel.new(0,0,65535))
+        else
+            img.pixel_color(x,y,Magick::Pixel.new(0,65535,0))
+        end
+      end
+    end
+  end
+
   def proccess
     if params[:position]==nil
       return
     end
     # ビューに返すインスタンス変数
-    @flg = true # ビューでフラグにより判断
     @top = params[:top]
     @left = params[:left]
     @width = params[:width]
@@ -94,6 +132,7 @@ class HomeController < ApplicationController
     @capital = params[:capital]
     @register = true # ビューの登録モードON
 
+    #==================================
     # img = Magick::ImageList.new('public/temp.jpg') # 画像読み込み
     # img = img.quantize(256, Magick::RGBColorspace) # 処理時間長いからなし！！
     img = Magick::Image.read('public/country_img/world_map.png').first
@@ -114,7 +153,10 @@ class HomeController < ApplicationController
     img = img.matte_floodfill(0, 0)
     # img = img.matte_floodfill(100, 100) # (100,100)のピクセルと同じ色は透明にする
     img.write('public/テスト画像.png') # 画像保存
-    img.write("public/country_img/#{@country}.png") # 画像保存
+    img.write("public/country_img/green/#{@country}.png") # 画像保存
+    image_color_change(img) #青色に変換
+    img = img.matte_floodfill(0, 0) #周りを透明化
+    img.write("public/country_img/blue/#{@country}.png") # 画像保存
     File.open($filepath, "a") do |f|
       f.puts(@country.to_s + "/" + @capital.to_s + "/" + country_pos.to_s)
     end
@@ -124,7 +166,12 @@ class HomeController < ApplicationController
       f.puts(time_str + " " + @country.to_s + "を追加しました．")
     end
     
-    render 'home/top'
+    #以下のコードはURLにパラメータが付加される．管理モード時しかこのアクションは使用しないため、問題ないはず．．．
+    redirect_to :controller => 'home', :action => 'top', 
+                                                         :top => params[:top], :left => params[:left], :width => params[:width], 
+                                                         :height => params[:height], :country => params[:country], 
+                                                         :capital => params[:capital], :register => @register
+    # redirect_to '/'
     puts "-----------------INFO-----------------------------"
     puts "画像サイズ：#{img.columns} x #{img.rows}"
     puts "入力座標：#{pos_arr}"
@@ -206,7 +253,7 @@ class HomeController < ApplicationController
   # 国データを削除する
   def remove_country
     if params[:country]==nil
-      render 'home/top'
+      redirect_to '/'
       return
     end
     @register = true # ビューの登録モードON
@@ -228,7 +275,8 @@ class HomeController < ApplicationController
         f.puts(line)
       end
     end
-    File.delete("public/country_img/#{@delete_country}.png") # 削除対象国の画像ファイル削除
+    File.delete("public/country_img/green/#{@delete_country}.png") # 削除対象国の画像ファイル削除
+    File.delete("public/country_img/blue/#{@delete_country}.png") # 削除対象国の画像ファイル削除
     puts "#{@delete_country}に関するデータを削除しました"
 
     t=Time.new
@@ -237,6 +285,56 @@ class HomeController < ApplicationController
       f.puts(time_str + " " + @delete_country.to_s + "を削除しました．")
     end
     # ビュー
-    render 'home/top'
+    # redirect_to '/'
+    #以下のコードはURLにパラメータが付加される．管理モード時しかこのアクションは使用しないため、問題ないはず．．．
+        redirect_to :controller => 'home', :action => 'top', :register => @register
+  end
+
+  #テスト
+  def UpdateDB
+    puts "UpdateDB実行：#{params[:correct_country]}:番号：#{params[:game]}"
+
+    if logged_in?
+      puts "ログインしてるから、DB登録しとくねー(^▽^)/"
+      game = Game.find_by(user_id: current_user.id) #ログインユーザーのレコードがGAMEテーブルにあるか．
+      if game == nil
+        #current_user.idさんはデータ初登録
+        game = Game.new
+        game.user_id = current_user.id
+        if params[:game]=="1"
+          game.country = params[:correct_country]
+          game.save
+          puts "ゲーム１クリア情報更新(新規データ)：#{game.country}"
+        else
+          game.capital = params[:correct_country]
+          game.save
+          puts "ゲーム２クリア情報更新(新規データ)：#{game.capital}"
+        end
+      else
+        #データに上書きする
+        if params[:game]=="1"
+          if game.country != nil
+            game.country = game.country + "," + params[:correct_country]
+            game.save
+          else
+            game.country = params[:correct_country]
+            game.save
+          end
+          puts "ゲーム１クリア情報更新：#{game.country}"
+        else
+          if game.capital != nil
+            game.capital = game.capital + "," + params[:correct_country]
+            game.save
+          else
+            game.capital = params[:correct_country]
+            game.save
+          end
+          puts "ゲーム２クリア情報更新：#{game.capital}"
+        end
+      end
+    end
+
+
+
   end
 end

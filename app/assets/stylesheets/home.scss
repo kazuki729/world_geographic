@@ -1,3 +1,4 @@
+
 * {
     margin: 0;
     padding: 0;
@@ -5,7 +6,7 @@
 }
 
 header {
-    background-color: rgba($color: darkgray, $alpha: 0.8);
+    background-color: rgba($color: darkgray, $alpha: 0.7);
     border-bottom: 3px solid black;
     height: 60px;
     font-size: 0;
@@ -21,21 +22,25 @@ header {
         display: inline-block;
     }
     p {
+        position: absolute;
+        top: 0;
         flex-basis: 200px;
         font-size: 25px;
         font-weight: bold;
         line-height: 60px;
         display: inline-block;
+        margin: 0px; //bootstrapで初期値が決められているため
     }
 }
 .wrapper {
     position: absolute;
     width: 300px;
     height: 100%;
-    // top: 60px;
-    background-color: lightskyblue;
-    // display: none;
+    overflow:auto;
+    background-color: rgba($color: darkslategray, $alpha: 0.5);
+    // background-color: darkgray;
     z-index: 10;
+    // font-size: 0;
     .close_btn{
         font-size: 30px;
         position: absolute;
@@ -47,8 +52,55 @@ header {
             color: rgba($color: red, $alpha: 0.5);
         }
     }
+    .side-menu-que{
+        color: white;
+        display: block;
+        font-size: 25px;
+        // border-bottom: 1px solid white;
+        text-align: center;
+        text-decoration: none;
+        &:hover{
+            background-color: rgba($color: salmon, $alpha: 0.8);
+            cursor: pointer;
+            cursor: hand;
+        }
+    }
+    .side-menu{
+        color: white;
+        display: block;
+        font-size: 25px;
+        border-bottom: 1px solid white;
+        text-align: center;
+        text-decoration: none;
+        &:hover{
+            background-color: rgba($color: salmon, $alpha: 0.8);
+            cursor: pointer;
+            cursor: hand;
+        }
+    }
+    // .side-info{
+    //     font-size: 10px;
+    // }
 }
 
+//スクロールバーのデザイン======================================
+::-webkit-scrollbar{
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track{
+    // background: #fff;
+    background: rgba($color: darkgray, $alpha: 0.8);
+    border: none;
+    border-radius: 10px;
+    box-shadow: inset 0 0 2px #777; 
+  }
+  ::-webkit-scrollbar-thumb{
+    background: orangered;
+    // background: #ccc;
+    border-radius: 10px;
+    box-shadow: none;
+  }
+//スクロールバーのデザイン======================================
 .display-space {
     position: absolute;
     // top: 60px;
@@ -115,18 +167,18 @@ header {
         display: none;
     }
     .menu_icon{
-        background-color: darkgray;
+        background-color: rgba($color:darkgray, $alpha: 0.5);
         color: black;
         width: 50px;
         height: 50px;
-        line-height: 50px;
+        // line-height: 50px;
         text-align: center;
         border-radius: 50%;
-        border: 2px solid blue;
-        font-size: 30px;
+        border: 2px solid white;
+        // font-size: 30px;
         position: absolute;
         bottom: 30px;
-        left: 275px;
+        left: 320px;
         z-index: 10;
     }
     .smaller,.bigger,.reset{
@@ -134,11 +186,11 @@ header {
         color: blue;
         width: 40px;
         height: 40px;
-        line-height: 40px;
+        // line-height: 40px; //bootstrap入れてから効かない
         text-align: center;
         border-radius: 50%;
         border: 2px solid blue;
-        font-size: 30px;
+        // font-size: 30px;
         position: absolute;
         bottom: 30px;
         right: 30px;
@@ -181,7 +233,6 @@ header {
     text-align: center;
     vertical-align: middle;
     padding-top: 200px;
-    // background-image: url(load.gif) center center no-repeat;
     background-image: url(loading2.jpg);
     background-repeat  : no-repeat;
     background-position: center;
@@ -191,21 +242,49 @@ header {
 
   //吹き出し
   .balloon4 {
-    position: relative;
+    position: absolute;
     padding: 0.5em;
     margin: 10px;
     top:10px;
-    left:10px;
+    right:10px;
     width: 250px;
-    background: #a6d3c8;
-    color: blue;
+    background-color: rgba($color: darkgray, $alpha: 0.9);
+    color: white;
     &:hover{
-        left: 20px;
+        right: 20px;
+        background-color: rgba($color:salmon, $alpha: 0.8);
         cursor: pointer;
         cursor: hand;
     }
   }
-  
+  #question{
+    position: absolute;
+    padding: 0.5em;
+    margin: 10px;
+    top:10px;
+    right:10px;
+    // width: 400px;
+    background-color: rgba($color: darkgray, $alpha: 0.9);
+    color: white;
+    border-radius: 5%;
+    display: none;
+  }
+  #select1{
+    top: 70px;
+    display: none;
+  }
+  #select2{
+    top: 130px;
+    display: none;
+  }
+  #select3{
+    top: 190px;
+    display: none;
+  }
+  #select4{
+    top: 250px;
+    display: none;
+  }
   .balloon4::before {
     position: absolute;
     content: '';
@@ -215,3 +294,45 @@ header {
     border-bottom: solid 15px transparent;
     border-right: solid 20px rgb(149, 158, 155);
   }
+// /* forms */
+// input, textarea, select, .uneditable-input {
+//     border: 1px solid #bbb;
+//     width: 50%;
+//     margin-bottom: 15px;
+//     // @include box_sizing;
+// }
+// input {
+//     height: auto !important;
+// }
+#error_explanation {
+    color: red;
+    ul {
+      color: red;
+      margin: 20px 0 20px 0;
+    }
+  }
+  
+  .field_with_errors {
+    // @extend .has-error;
+    .form-control {
+      color: red;
+    }
+  }
+
+//signup画面の画像
+.signup-inner, .login-inner {
+    position: absolute;
+    // position: fixed;
+    // right: 0;
+    width: 100%;
+    height: 100%;
+    // content: '';
+    margin: 0px;
+    background-image: url(signup6.jpg);
+    // background-repeat  : no-repeat;
+    background-size: cover;
+    // border: 1px solid blue;
+}
+.input-form{
+    width: 100%;
+}

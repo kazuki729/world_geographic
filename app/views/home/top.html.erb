@@ -7,75 +7,103 @@
         <div></div>
         <p>WorldGeographic</p>
     </header>
-    <!-- 管理モード -->
-    <div class="admin" style="display: none">
-        <p style="display:block; background-color: lightgreen; text-align:center; border-bottom: 1px solid black;">新規データ登録</p>
-        <div style="padding: 10px;background-color: lightgreen">
-            <p style="display: inline-block">国名</p>
-            <input type="text" placeholder="country name" id="country" style="margin-left:5px;margin-bottom:5px;height:30px;">
-            <br>
-            <p style="display: inline-block"">首都</p>
-            <input type="text" placeholder="capital name" id="capital" style="margin-left:5px;height:30px;">
-        </div>
-        <p style="display:block; background-color: lightcoral; text-align:center;border-bottom: 1px solid black;">削除データ登録</p>
-        <div style="padding: 10px;background-color: lightcoral">
-            <p style="margin-left:3px;">削除するデータを選択してください．</p>
-            <select name="delete_menu" id="delete_menu" style="margin-left:5px;height:30px;">
-                <option></option>
-            </select>
-            <% if @register==true %>
-                <input type="button" value="削除" id="delete" style="margin-left:5px;">
-                <input type="button" value="履歴" id="history" style="margin-left:2px;">
-            <% else %>
-                <input type="button" value="削除" id="delete" disabled="disabled" style="margin-left:5px;">
-                <input type="button" value="履歴" id="history" disabled="disabled" style="margin-left:2px;">
-            <% end %>
-        </div>
-        <p style="display:block; background-color: lightblue; text-align:center;border-bottom: 1px solid black;">透明バッチ処理</p>
-        <div style="padding: 10px;background-color: lightblue">
-            <% if @register==true %>
-                <input type="button" value="透明処理" id="skelton" style="margin-left:2px;">
-            <% else %>
-                <input type="button" value="透明処理" id="skelton" disabled="disabled" style="margin-left:2px;">
-            <% end %>
-        </div>
-        <% if @register == true %>
-            <input type="checkbox" name="mode" style="margin-left:5px;text-align:center;" id="mode" checked> 登録モードを有効
-        <% else %>
-            <div style="display:flex;margin-top:5px;">
-                <input type="checkbox" name="mode" style="margin-left:5px;margin-right:5px;text-align:center;width:20px;height:20px;flex-basis: 20px;" id="mode">登録モードを有効
+    <!-- ログイン中の画面 -->
+    <div>
+        <span class="side-menu-que">問題形式</span>
+        <span class="btn btn-outline-danger text-white mt-2 mb-3 ml-4" style="background-color:limegreen;" id="game1">場所➡国名</span>
+        <span class="btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="game2">国名➡首都</span>
+        <% if logged_in? %>
+            <div style="font-size:0;"><!-- ログアウトの上に余白があるため -->
+                <%= link_to "マイページ", current_user, class: "side-menu", style: "border-top:1px solid white;" %><br>
+                <%= link_to "ログアウト", logout_path, method: :delete, class: "side-menu" %>
             </div>
+        <% else %>
+            <%= link_to "ログイン", login_path, class: "side-menu" , style: "border-top:1px solid white;" %>
         <% end %>
-        
-        <div style="position: absolute;bottom:0;width:100%;">
-            <span id="mouse-position">ブラウザ上のマウス位置：</span>
-            <br>
-            <span id="img-position">画像上のマウス位置：</span>
-            <br>
-            <span id="org-position">元画像上のマウス位置</span>
-            <br>
-            <span id="country_count">データ登録数：</span>
-            <br>
-            <span id="test">***</span>
+    </div>
+    <!-- 管理モード -->
+    <% if current_user.id == 1 %>
+        <div class="admin">
+    <% else %>
+        <div class="admin" hidden>
+    <% end %>
+            <p style="display:block; background-color: lightgreen; text-align:center; border-bottom: 1px solid black;margin:0;">新規データ登録</p>
+            <div style="padding: 10px;background-color: lightgreen">
+                <p style="display: inline-block">国名</p>
+                <input type="text" placeholder="country name" id="country" style="margin-left:5px;margin-bottom:5px;height:30px;">
+                <br>
+                <p style="display: inline-block"">首都</p>
+                <input type="text" placeholder="capital name" id="capital" style="margin-left:5px;height:30px;">
+                <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録モードを有効にしてください．</p>
+                <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※国名、首都名を入力してください．</p>
+                <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録国の場所を地図上で指定してください．</p>
+            </div>
+            <p style="display:block; background-color: lightcoral; text-align:center;border-bottom: 1px solid black;margin:0;">削除データ登録</p>
+            <div style="padding: 10px;background-color: lightcoral">
+                <p style="margin-left:3px;font-size:12px;display:inline-block;">削除するデータを選択してください．</p>
+                <% if @register=="true" %>
+                    <input type="button" class="btn btn-primary btn-sm" value="削除" id="delete" style="margin-left:5px; display:inline-block;">
+                <% else %>
+                    <input type="button" class="btn btn-primary btn-sm" value="削除" id="delete" disabled="disabled" style="margin-left:5px; display:inline-block;">
+                <% end %>
+                <select name="delete_menu" id="delete_menu" style="margin-left:5px;height:30px;">
+                    <option></option>
+                </select>
+                <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録モードを有効にすると、実行できます．</p>
+            </div>
+            <p style="display:block; background-color: lightblue; text-align:center;border-bottom: 1px solid black;margin:0;">透明バッチ処理</p>
+            <div style="padding: 10px;background-color: lightblue">
+                <% if @register=="true" %>
+                    <input type="button" value="透明処理" id="skelton" style="margin-left:2px;">
+                <% else %>
+                    <input type="button" value="透明処理" id="skelton" disabled="disabled" style="margin-left:2px;">
+                <% end %>
+            </div>
+            <% if @register == "true" %>
+                <div style="display:flex;margin-top:5px;">
+                    <input type="checkbox" name="mode" style="margin-left:5px;margin-right:5px;text-align:center;width:20px;height:20px;flex-basis: 20px;" id="mode" checked>
+                    <p style="color:white;">登録モードを有効</p>
+                </div>
+            <% else %>
+                <div style="display:flex;margin-top:5px;">
+                    <input type="checkbox" name="mode" style="margin-left:5px;margin-right:5px;text-align:center;width:20px;height:20px;flex-basis: 20px;" id="mode">
+                    <p style="color:white;">登録モードを有効</p>
+                </div>
+            <% end %>
+            
+            <!-- <div style="position: absolute;bottom:0;width:100%;color:white;"> -->
+            <div style="color:white;">
+                <span id="mouse-position" class="side-info">ブラウザ上のマウス位置：</span>
+                <br>
+                <span id="img-position" class="side-info">画像上のマウス位置：</span>
+                <br>
+                <span id="org-position" class="side-info">元画像上のマウス位置</span>
+                <br>
+                <span id="country_count" class="side-info">データ登録数：</span>
+                <br>
+                <span id="test">***</span>
+            </div>
         </div>
-    </div>
-    <!-- 新規登録画面 -->
-    <div class="signup">
-        signup
-    </div>
+    <!-- 管理モードここまで -->
+    <!-- テストメニュー -->
+
 </div>
 
 <!-- 画像表示ゾーン -->
 <div class="display-space" id="display-space">
-    <% if @image_path!=nil %>
-        <img src="temp.jpg" class="input-image" id="input-image">
-    <% elsif @flg && @top!=nil %>
-        <img src="country_img/world_map.png" class="input-image" id="input-image2"　 style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
-        <img src="テスト画像.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
-    <% elsif @flg && @top==nil %>
-        <img src="テスト画像.png" class="input-image" id="input-image">
+    <!--  画像処理後の表示 -->
+    <% if @top!=nil %>
+        <img src="country_img/world_map.png" class="input-image" id="input-image_base"　 style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+        <div id="pile_image">
+            <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1..) -->
+        </div>
+        <img src="country_img/skelton.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+    <!--  初期の表示（全体と透明マップ） -->
     <% else %>
-        <img src="country_img/world_map.png" class="input-image" id="input-image2">
+        <img src="country_img/world_map.png" class="input-image" id="input-image_base">
+        <div id="pile_image">
+            <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1~[クリア数]) -->
+        </div>
         <img src="country_img/skelton.png" class="input-image" id="input-image">
     <% end %>
     <span class="horizontal" id="horizontal"></span>
@@ -84,6 +112,7 @@
     <button type="button" value="－縮小" id="smaller" class="smaller">‐</button>
     <button type="button" value="＋拡大" id="bigger" class="bigger">+</button>
     <button type="button" value="リセット" id="reset" class="reset">R</button>
+    <div class="" id="question"></div>
     <div class="balloon4" id="select1">選択１</div>
     <div class="balloon4" id="select2">選択２</div>
     <div class="balloon4" id="select3">選択３</div>
@@ -93,6 +122,7 @@
 
 <!-- 以下、javascript -->
 <script type="text/javascript">
+try{
     var style_size = 0;
     var mX = 0 ;
     var mY = 0;
@@ -126,6 +156,26 @@
     var country_list =[];
     var capital_list =[];
     var correct_option = 0; //現在出題されている問題の答え番号（１～４）
+    var correct_country = 0;
+    var game_number =1; //選択されているgame番号[1:game1 2:game2]
+    // var clear_country=["japan","peru"]
+    // var clear_country=[]
+    var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
+    var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
+    if(clear_game1 ==""){
+        clear_game1=[]
+    }else{
+        clear_game1 = clear_game1.split(','); //配列に分割
+    }
+    if(clear_game2==""){
+        clear_game2=[]
+    }else{
+        clear_game2 = clear_game2.split(','); //配列に分割
+    }
+    completed_country_display(clear_game1) //最初はgame1の設定からスタート
+    // publicフォルダからの相対パスで指定
+    var country_table = [];
+    readTextFile("country.txt")
     //MAP上にマウスがいる時
     $('#input-image').hover(function() {
         hoverFlag=true
@@ -160,10 +210,6 @@
         return temp
     }
     //--------------------------------------------------------------------
-    // publicフォルダからの相対パスで指定
-    // 謎現象：country_pos.txtと指定すると、publicにそのファイル名がないのに読み込まれる．
-    var country_table = [];
-    // readTextFile("country.txt")
     function sort_data(table){
         // var country = str.split('/')
         var temp = ""
@@ -204,6 +250,25 @@
         elem_count.innerHTML = '<span id="country_count">データ登録数：'+ country_count +'カ国</span>'
     }
 
+    //クリアしている国を塗る
+    function completed_country_display(clear_country) {
+        // clear_country=["japan","china"]
+        var str = make_html(clear_country)
+        elem = document.getElementById('pile_image')
+        elem.innerHTML = str
+        //位置調整
+        clear_country.forEach(function( value, index ) {
+            var id = "input-country" + (index+1)
+            var top = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top');
+            var left = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left');
+            var width = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width');
+            var height = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
+            document.getElementById(id).style.top = top;
+            document.getElementById(id).style.left = left;
+            document.getElementById(id).style.width = width;
+            document.getElementById(id).style.height = height;
+        });
+    }
     //国の特定と表示
     function country_display(col,row) {
         var pos_key = "["+col + ", " + row+"]";
@@ -212,16 +277,23 @@
                 var country = str.split('/')
                 //画像表示
                 elem = document.getElementById('input-image')
-                elem.src = "country_img/"+country[0] + ".png";
-                // var file = "country_region-/"+country[0] + ".png"
-                // elem.innerHTML = '<img src="temp.jpg" class="input-image" id="input-image">' +
-                //                     '<img src="temp.jpg" class="input-image2" id="input-image2">'
+                elem.src = "country_img/blue/"+country[0] + ".png";
                 m_position = document.getElementById('test')
                 m_position.innerHTML = '<span id="test">国名：'+country[0]+' 首都名'+ country[1] +'</span>'
                 now_country = country[0] //グローバル変数
                 now_capital = country[1] //グローバル変数
             }
         });
+    }
+    //クリアした国をimgタグ化する
+    function make_html(arr) {
+        var inner_html = ''
+        var i = 1
+        arr.forEach(function( country ) {
+            inner_html = inner_html + '<img src="country_img/green/'+country+'.png" class="input-image" id="input-country'+ i +'">'
+            i=i+1
+        });
+        return inner_html
     }
     function readTextFile(file){
         var rawFile = new XMLHttpRequest();
@@ -232,14 +304,21 @@
         rawFile.setRequestHeader('Cache-Control', 'no-cache');
         rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
         rawFile.onreadystatechange = function (){
-            dispLoading("Now Loading ．．．")
+            const startTime = Date.now(); //debug
+            dispLoading("データ取得中．．．")
             if(rawFile.readyState === 4){
                 if(rawFile.status === 200 || rawFile.status == 0){
+                    // alert("読み込み開始")
                     allText = rawFile.responseText;
                     country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
                     country_table = country_table.filter(Boolean); //空白除去
                     country_table = sort_data(country_table)
                     display_list() // ドロップダウンに国をリストする
+                    //debug
+                    const endTime = Date.now();
+                    var time=endTime-startTime;
+                    console.log("読み込み時間： " + time +"msec");
+                    // alert("読み込み完了")
                 }
                 else if(rawFile.status === 304){
                     alert("ステータスコード：304")
@@ -258,22 +337,41 @@
     document.getElementById("mode").onclick = function (event) {
         const mode = document.getElementsByName("mode");
         var delete_btn = document.getElementById("delete")
-        var history_btn = document.getElementById("history")
         var skelton_btn = document.getElementById("skelton")
         if(mode[0].checked){
             //登録モードがON
             delete_btn.disabled = false;
-            history_btn.disabled = false;
             skelton_btn.disabled = false;
         }else{
             delete_btn.disabled = true;
-            history_btn.disabled = true;
             skelton_btn.disabled = true;
         }
+    };
+    // Game1ボタン（国名➡首都をあてるゲーム）
+    document.getElementById("game1").onclick = function (event) {
+        document.getElementById("game1").style.backgroundColor ="limegreen";
+        document.getElementById("game2").style.backgroundColor ="initial";
+        completed_country_display(clear_game1) //クリア国の表示切り替え
+        game_number=1;
+    };
+    // Game2ボタン（首都➡国名をあてるゲーム）
+    document.getElementById("game2").onclick = function (event) {
+        document.getElementById("game1").style.backgroundColor ="initial";
+        document.getElementById("game2").style.backgroundColor ="limegreen";
+        completed_country_display(clear_game2) //クリア国の表示切り替え
+        game_number=2;
     };
     //選択肢ボタン
     document.getElementById("select1").onclick = function (event) {
         if(correct_option==1){
+            if(game_number == 1){
+                clear_game1.push(correct_country) //@完了！
+                completed_country_display(clear_game1)//@完了！
+            }else{
+                clear_game2.push(correct_country) //@完了！
+                completed_country_display(clear_game2)//@完了！
+            }
+            UpdateDB(correct_country,game_number) //テスト
             alert("正解")
         }else{
             alert("残念")
@@ -281,6 +379,14 @@
     }
     document.getElementById("select2").onclick = function (event) {
         if(correct_option==2){
+            if(game_number == 1){
+                clear_game1.push(correct_country) //@完了！
+                completed_country_display(clear_game1)//@完了！
+            }else{
+                clear_game2.push(correct_country) //@完了！
+                completed_country_display(clear_game2)//@完了！
+            }
+            UpdateDB(correct_country,game_number) //テスト
             alert("正解")
         }else{
             alert("残念")
@@ -288,6 +394,14 @@
     }
     document.getElementById("select3").onclick = function (event) {
         if(correct_option==3){
+            if(game_number == 1){
+                clear_game1.push(correct_country) //@完了！
+                completed_country_display(clear_game1)//@完了！
+            }else{
+                clear_game2.push(correct_country) //@完了！
+                completed_country_display(clear_game2)//@完了！
+            }
+            UpdateDB(correct_country,game_number) //テスト
             alert("正解")
         }else{
             alert("残念")
@@ -295,6 +409,14 @@
     }
     document.getElementById("select4").onclick = function (event) {
         if(correct_option==4){
+            if(game_number == 1){
+                clear_game1.push(correct_country) //@完了！
+                completed_country_display(clear_game1)//@完了！
+            }else{
+                clear_game2.push(correct_country) //@完了！
+                completed_country_display(clear_game2)//@完了！
+            }
+            UpdateDB(correct_country,game_number) //テスト
             alert("正解")
         }else{
             alert("残念")
@@ -335,7 +457,7 @@
                 "display": "initial",
             });
             $(".menu_icon").css({
-                "left": "275px",
+                "left": "320px",
             });
             $(".menu_icon").text("×");
             menu_open_flg=true
@@ -351,12 +473,10 @@
         //データを削除するpostリクエスト
         postDeleteCountry(delete_key);
     }
+
     //画像透明化アクション（バッチ処理）
     document.getElementById("skelton").onclick = function (event) {
         postskelton();
-    }
-    // 履歴ボタン
-    document.getElementById("history").onclick = function (event) {
     }
     var send_pos_data = ""; //post送信用のデータ｛例｝x1,y1,x2,y2,x3,y3
     var region_index = 2;
@@ -400,17 +520,45 @@
             var num2 = random_num[1]
             var num3 = random_num[2]
             var num4 = random_num[3]
-            var elem = document.getElementById("select1")
-            elem.innerHTML = "選択１： "+country_list[num1]
-            elem = document.getElementById("select2")
-            elem.innerHTML = "選択２： "+country_list[num2]
-            elem = document.getElementById("select3")
-            elem.innerHTML = "選択３： "+country_list[num3]
-            elem = document.getElementById("select4")
-            elem.innerHTML = "選択４： "+country_list[num4]
-            var cards = [num1,num2,num3,num4];
-            correct_option = cards.indexOf(answer) + 1; //正解番号を記憶
-            // alert("正解は。。。"+correct_option)
+            if(game_number==1){
+                var elem = document.getElementById("question")
+                elem.innerHTML = "選択した国の国名は次のうちどれでしょう？"
+                elem.style.display = "initial"
+                elem = document.getElementById("select1")
+                elem.style.display = "initial"
+                elem.innerHTML = "① "+country_list[num1]
+                elem = document.getElementById("select2")
+                elem.style.display = "initial"
+                elem.innerHTML = "② "+country_list[num2]
+                elem = document.getElementById("select3")
+                elem.style.display = "initial"
+                elem.innerHTML = "③ "+country_list[num3]
+                elem = document.getElementById("select4")
+                elem.style.display = "initial"
+                elem.innerHTML = "④ "+country_list[num4]
+                var cards = [num1,num2,num3,num4];
+                correct_option = cards.indexOf(answer) + 1; //正解番号を記憶
+                correct_country = now_country;
+            }else if(game_number==2){
+                var elem = document.getElementById("question")
+                elem.innerHTML = ""+ now_country +"の首都名は次のうちどれでしょう？"
+                elem.style.display = "initial"
+                elem = document.getElementById("select1")
+                elem.style.display = "initial"
+                elem.innerHTML = "① "+capital_list[num1]
+                elem = document.getElementById("select2")
+                elem.style.display = "initial"
+                elem.innerHTML = "② "+capital_list[num2]
+                elem = document.getElementById("select3")
+                elem.style.display = "initial"
+                elem.innerHTML = "③ "+capital_list[num3]
+                elem = document.getElementById("select4")
+                elem.style.display = "initial"
+                elem.innerHTML = "④ "+capital_list[num4]
+                var cards = [num1,num2,num3,num4];
+                correct_option = cards.indexOf(answer) + 1; //正解番号を記憶
+                correct_country = now_country;
+            }
         }
     }
     //マウスホイール
@@ -423,7 +571,12 @@
         if (delta < 0){
             // 拡大
             // photo_scale_bigger();
+            const startTime = Date.now();
             photo_scale_change(1.05);
+            const endTime = Date.now();
+            var time=endTime-startTime;
+            console.log("拡大の処理時間： " + time +"msec");
+            // alert((endTime-startTime)/1000 +"Sec")
         }else{
             // 縮小
             // photo_scale_smaller();
@@ -473,8 +626,22 @@
             pin_left = parseFloat(window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('left')) + diff_x
             document.getElementById("input-image").style.top = str_top;
             document.getElementById("input-image").style.left = str_left;
-            document.getElementById("input-image2").style.top = str_top;
-            document.getElementById("input-image2").style.left = str_left;
+            document.getElementById("input-image_base").style.top = str_top;
+            document.getElementById("input-image_base").style.left = str_left;
+            if(game_number==1){
+                clear_game1.forEach(function( value, index ) {　//@完了！
+                    var id = "input-country" + (index+1)
+                    document.getElementById(id).style.top = str_top;
+                    document.getElementById(id).style.left = str_left;
+                });
+            }else{
+                clear_game2.forEach(function( value, index ) {　//@完了！
+                    var id = "input-country" + (index+1)
+                    document.getElementById(id).style.top = str_top;
+                    document.getElementById(id).style.left = str_left;
+                });
+            }
+
             document.getElementById("droppin").style.top = pin_top+"px";
             document.getElementById("droppin").style.left = pin_left+"px";
             mX_before = mX;
@@ -491,6 +658,7 @@
     });
     // マウスポインタの位置
     document.addEventListener("mousemove", function(e){
+        const startTime = Date.now() //debug
         mX = e.pageX;  //X座標
         mY = e.pageY;  //Y座標
         //座標を表示する
@@ -514,6 +682,10 @@
         position_display();
         country_display(Math.round(Org_mouse_x),Math.round(Org_mouse_y));
         image_move();
+        //debug
+        const endTime = Date.now();
+        var time=endTime-startTime;
+        console.log("マウス移動の処理時間： " + time +"msec");
     });
     function position_display(){
         //画像上のマウスの位置
@@ -587,10 +759,27 @@
         document.getElementById("input-image").style.height = style_size_h+"px";
         document.getElementById("input-image").style.maxWidth = 'initial';
         document.getElementById("input-image").style.maxHeight = 'initial';
-        document.getElementById("input-image2").style.width = style_size+"px";
-        document.getElementById("input-image2").style.height = style_size_h+"px";
-        document.getElementById("input-image2").style.maxWidth = 'initial';
-        document.getElementById("input-image2").style.maxHeight = 'initial';
+        document.getElementById("input-image_base").style.width = style_size+"px";
+        document.getElementById("input-image_base").style.height = style_size_h+"px";
+        document.getElementById("input-image_base").style.maxWidth = 'initial';
+        document.getElementById("input-image_base").style.maxHeight = 'initial';
+        if(game_number==1){
+            clear_game1.forEach(function( value, index ) {//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.width = style_size+"px";
+                document.getElementById(id).style.height = style_size_h+"px";
+                document.getElementById(id).style.maxWidth = 'initial';
+                document.getElementById(id).style.maxHeight = 'initial';
+            });
+        }else{
+            clear_game2.forEach(function( value, index ) {//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.width = style_size+"px";
+                document.getElementById(id).style.height = style_size_h+"px";
+                document.getElementById(id).style.maxWidth = 'initial';
+                document.getElementById(id).style.maxHeight = 'initial';
+            });
+        }
         if(hoverFlag==false){ //hover時のborderプロパティで判断（greenなら）
             //範囲外
             //マウスポインタが画像に乗っていない時は以下実行しない（ボタンでサイズ変更したとき）
@@ -615,7 +804,19 @@
         var left_set_val = parseFloat(pin_left_val) + differ_x - pin_differ_x //differ_x - pin_differ_xで画像とPINの２重移動を補正
         //--------------------------------------------------------------------
         document.getElementById("input-image").style.left = set_val + 'px';
-        document.getElementById("input-image2").style.left = set_val + 'px';
+        document.getElementById("input-image_base").style.left = set_val + 'px';
+        if(game_number==1){
+            clear_game1.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.left = set_val + 'px';
+            });
+        }else{
+            clear_game2.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.left = set_val + 'px';
+            });
+        }
+
         //--------------------------------------------------------------------
         document.getElementById("droppin").style.left = left_set_val + 'px';
         //Y方向の計算・移動
@@ -629,7 +830,19 @@
         var pin_top_val = window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('top');
         var top_set_val = parseFloat(pin_top_val) + differ_y - pin_differ_y //differ_x - pin_differ_xで画像とPINの２重移動を補正
         document.getElementById("input-image").style.top = set_val + 'px';
-        document.getElementById("input-image2").style.top = set_val + 'px';
+        document.getElementById("input-image_base").style.top = set_val + 'px';
+        if(game_number==1){
+            clear_game1.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.top = set_val + 'px';
+            });
+        }else{
+            clear_game2.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.top = set_val + 'px';
+            });
+        }
+
         document.getElementById("droppin").style.top = top_set_val + 'px';
     };
 
@@ -642,13 +855,37 @@
         document.getElementById("input-image").style.top = '50%';
         document.getElementById("input-image").style.left = '50%';
         document.getElementById("input-image").style.transform = 'translate(-50%, -50%)';
-        document.getElementById("input-image2").style.width = 'auto';
-        document.getElementById("input-image2").style.height = 'auto';
-        document.getElementById("input-image2").style.maxWidth = '100%';
-        document.getElementById("input-image2").style.maxHeight = '100%';
-        document.getElementById("input-image2").style.top = '50%';
-        document.getElementById("input-image2").style.left = '50%';
-        document.getElementById("input-image2").style.transform = 'translate(-50%, -50%)';
+        document.getElementById("input-image_base").style.width = 'auto';
+        document.getElementById("input-image_base").style.height = 'auto';
+        document.getElementById("input-image_base").style.maxWidth = '100%';
+        document.getElementById("input-image_base").style.maxHeight = '100%';
+        document.getElementById("input-image_base").style.top = '50%';
+        document.getElementById("input-image_base").style.left = '50%';
+        document.getElementById("input-image_base").style.transform = 'translate(-50%, -50%)';
+        if(game_number==1){
+            clear_game1.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.width = 'auto';
+                document.getElementById(id).style.height = 'auto';
+                document.getElementById(id).style.maxWidth = '100%';
+                document.getElementById(id).style.maxHeight = '100%';
+                document.getElementById(id).style.top = '50%';
+                document.getElementById(id).style.left = '50%';
+                document.getElementById(id).style.transform = 'translate(-50%, -50%)';
+            });
+        }else{
+            clear_game2.forEach(function( value, index ) {　//@完了！
+                var id = "input-country" + (index+1)
+                document.getElementById(id).style.width = 'auto';
+                document.getElementById(id).style.height = 'auto';
+                document.getElementById(id).style.maxWidth = '100%';
+                document.getElementById(id).style.maxHeight = '100%';
+                document.getElementById(id).style.top = '50%';
+                document.getElementById(id).style.left = '50%';
+                document.getElementById(id).style.transform = 'translate(-50%, -50%)';
+            });
+        }
+
         document.getElementById("droppin").style.display = 'none';
         send_pos_data="";
         region_index = 2;
@@ -705,13 +942,12 @@
         form.appendChild(request7);
 
         document.body.appendChild(form);
-        dispLoading("Now Loading ．．．")
+        dispLoading("サーバーアクセス中．．．")
         form.submit();
     }
     // POST送信(国名をキーにしてデータを削除する)
     function postDeleteCountry(value) {
         var form = document.createElement('form');
-    
         form.method = 'POST';
         form.action = '/remove';
     
@@ -720,12 +956,11 @@
         request1.name = 'country';
         request1.value = value;
         form.appendChild(request1);
-
         document.body.appendChild(form);
-        dispLoading("Now Loading ．．．")
+        dispLoading("サーバーアクセス中．．．")
         form.submit();
     }
-    // POST送信(国名をキーにしてデータを削除する)
+    // 透明化のバッチ処理
     function postskelton() {
         var form = document.createElement('form');
     
@@ -765,4 +1000,35 @@
     function removeLoading(){
         $("#loading").remove();
     }
+
+    //テスト
+    function UpdateDB(correct_country,game_num){
+        alert("AJAXをキック（処理開始）")
+        $.ajax({
+            type:'GET', // リクエストのタイプはGETです
+            url: '/UpdateDB', // URLは"/meals"を指定します
+            data: {correct_country: correct_country, game: game_num}, // コントローラへフォームの値を送信します
+            dataType: 'json' // データの型はjsonで指定します
+        })
+        .done(function(data){
+        // 通信に成功した場合の処理です
+            alert("非同期通信完了！")
+        })
+        .fail(function(){
+            // 通信に失敗した場合の処理です
+            alert('非同期通信失敗！')
+        })
+    }
+
+}catch(e){
+        var errMsg = "";
+        if (e.fileName && e.lineNumber) {
+            // ファイル名と行番号が取得できたらメッセージとしてログに出力する
+            errMsg = "ファイル名：" + e.fileName + "、 行番号：" + e.lineNumber;
+        } else {
+            errMsg = e.message;
+        }
+        alert(errMsg)
+        console.error("エラー：", errMsg);
+}
 </script>
