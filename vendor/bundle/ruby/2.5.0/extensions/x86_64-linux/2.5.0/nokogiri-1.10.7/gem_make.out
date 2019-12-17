@@ -1,0 +1,5 @@
+current directory: /mnt/c/Users/looka/rails_on_windows/testApp/vendor/bundle/ruby/2.5.0/gems/nokogiri-1.10.7/ext/nokogiri
+/usr/bin/ruby2.5 -r ./siteconf20191216-1650-fb2fd4.rb extconf.rb --use-system-libraries
+mkmf.rb can't find header files for ruby at /usr/lib/ruby/include/ruby.h
+
+extconf failed, exit code 1
