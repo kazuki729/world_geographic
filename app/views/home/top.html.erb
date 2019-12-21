@@ -1,5 +1,17 @@
   <!-- ここから
-  コメント方法
+  【画像表示の仕組み】
+    １．画像表示は3層で構築
+        ➡world_map.png -> 第4層（最背面）世界地図の全体画像(3725x2048).
+        ➡pile_image    -> 第3層（中間層）ゲームクリアした国を追加していくスペース(1980x1238).
+        ➡select_iamge  -> 第2層（中間層）現在、マウスでポイントしている国を表示.
+        ➡skelton_image -> 第1層（最前面）透明な画像(3725x2048).
+    ２．国の特定方法
+        ➡skelton_imageの中でどの座標をポイントしているかを取得(3725x2048)
+        ➡国の座標情報を記録したデータから取得座標で検索して、国を特定する
+        ➡その国をselect_imageに入れる
+    ３．注意点
+        ➡pile_imageは最大100枚以上表示するため、画像サイズを小さくしている.
+        ➡国の座標情報を記録したデータは【3725x2048】内の座標.※【1980x1238】ではない！！
   -->
 <!-- 設定メニュー -->
 <div class="wrapper">
@@ -12,6 +24,17 @@
         <span class="side-menu-que">問題形式</span>
         <span class="btn btn-outline-danger text-white mt-2 mb-3 ml-4" style="background-color:limegreen;" id="game1">場所➡国名</span>
         <span class="btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="game2">国名➡首都</span>
+        <br>
+        <span class="side-menu-que">出題地域</span>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Europe">ヨーロッパ</span>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Asia">アジア</span>
+        <br>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Africa">アフリカ</span>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Oceania">オセアニア</span>
+        <br>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="NorthAmerica">北アメリカ</span>
+        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="SouthAmerica">南アメリカ</span>
+
         <% if logged_in? %>
             <div style="font-size:0;"><!-- ログアウトの上に余白があるため -->
                 <%= link_to "マイページ", current_user, class: "side-menu", style: "border-top:1px solid white;" %><br>
@@ -85,18 +108,18 @@
             </div>
         </div>
     <!-- 管理モードここまで -->
-    <!-- テストメニュー -->
-
 </div>
 
 <!-- 画像表示ゾーン -->
 <div class="display-space" id="display-space">
     <!--  画像処理後の表示 -->
     <% if @top!=nil %>
-        <img src="country_img/world_map.png" class="input-image" id="input-image_base"　 style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+        <img src="country_img/world_map.png" class="input-image" id="input-image_base" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
         <div id="pile_image">
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1..) -->
         </div>
+         <!-- 選択中の国を表示(青) -->
+        <img src="country_img/skelton.png" class="input-image" id="select_image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
         <img src="country_img/skelton.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
     <!--  初期の表示（全体と透明マップ） -->
     <% else %>
@@ -104,7 +127,9 @@
         <div id="pile_image">
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1~[クリア数]) -->
         </div>
-        <img src="country_img/skelton.png" class="input-image" id="input-image">
+        <!-- 選択中の国を表示(青) -->
+        <img src="country_img/skelton.png" class="input-image" id="select_image">
+        <img src="country_img/skelton.png" class="input-image" id="input-image"> <!-- 透明画像．画像はフルサイズ -->
     <% end %>
     <span class="horizontal" id="horizontal"></span>
     <span class="vertical" id="vertical"></span>
@@ -158,10 +183,10 @@ try{
     var correct_option = 0; //現在出題されている問題の答え番号（１～４）
     var correct_country = 0;
     var game_number =1; //選択されているgame番号[1:game1 2:game2]
-    // var clear_country=["japan","peru"]
-    // var clear_country=[]
     var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
     var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
+    // clear_game1 = "afghanistan,algeria,angola,argentina,armenia,australia,austria,azerbaijan,bangladesh,belgium,belize,benin,bhutan,bolivia"
+
     if(clear_game1 ==""){
         clear_game1=[]
     }else{
@@ -257,33 +282,41 @@ try{
         elem = document.getElementById('pile_image')
         elem.innerHTML = str
         //位置調整
-        clear_country.forEach(function( value, index ) {
-            var id = "input-country" + (index+1)
-            var top = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top');
-            var left = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left');
-            var width = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width');
-            var height = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
-            document.getElementById(id).style.top = top;
-            document.getElementById(id).style.left = left;
-            document.getElementById(id).style.width = width;
-            document.getElementById(id).style.height = height;
+        var top = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top');
+        var left = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left');
+        var width = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width');
+        var height = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
+        $(".input-image").css({ //コード整理
+            top: top,
+            left: left,
+            width: width,
+            height: height,
         });
+        photo_scale_change(1) //国の位置がなぜかずれるので、再描画
     }
     //国の特定と表示
     function country_display(col,row) {
         var pos_key = "["+col + ", " + row+"]";
+        var flg = false; //ローカル変数
         country_table.forEach(function( str ) {
             if(str.indexOf(pos_key) != -1){
                 var country = str.split('/')
                 //画像表示
-                elem = document.getElementById('input-image')
+                // elem = document.getElementById('input-image')
+                elem = document.getElementById('select_image')
                 elem.src = "country_img/blue/"+country[0] + ".png";
                 m_position = document.getElementById('test')
                 m_position.innerHTML = '<span id="test">国名：'+country[0]+' 首都名'+ country[1] +'</span>'
                 now_country = country[0] //グローバル変数
                 now_capital = country[1] //グローバル変数
+                flg=true;
             }
         });
+        //国の上にマウスがない時
+        if(flg==false){
+            elem = document.getElementById('select_image')
+            elem.src = "country_img/skelton.png";
+        }
     }
     //クリアした国をimgタグ化する
     function make_html(arr) {
@@ -304,7 +337,6 @@ try{
         rawFile.setRequestHeader('Cache-Control', 'no-cache');
         rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
         rawFile.onreadystatechange = function (){
-            const startTime = Date.now(); //debug
             dispLoading("データ取得中．．．")
             if(rawFile.readyState === 4){
                 if(rawFile.status === 200 || rawFile.status == 0){
@@ -314,11 +346,6 @@ try{
                     country_table = country_table.filter(Boolean); //空白除去
                     country_table = sort_data(country_table)
                     display_list() // ドロップダウンに国をリストする
-                    //debug
-                    const endTime = Date.now();
-                    var time=endTime-startTime;
-                    console.log("読み込み時間： " + time +"msec");
-                    // alert("読み込み完了")
                 }
                 else if(rawFile.status === 304){
                     alert("ステータスコード：304")
@@ -347,6 +374,68 @@ try{
             skelton_btn.disabled = true;
         }
     };
+    document.getElementById("Europe").onclick = function (event) {
+        choose_region(306,838,3.0) //アフリカの中心座標は(375,1400)
+    };
+    document.getElementById("Asia").onclick = function (event) {
+        choose_region(1096,746,1.5) //アフリカの中心座標は(375,1400)
+    };
+    document.getElementById("Oceania").onclick = function (event) {
+        choose_region(1386,1665,3.0) //アフリカの中心座標は(375,1400)
+    };
+    document.getElementById("Africa").onclick = function (event) {
+        choose_region(375,1400,2.0) //アフリカの中心座標は(375,1400)
+    };
+    document.getElementById("NorthAmerica").onclick = function (event) {
+        choose_region(2432,834,2.5) //アフリカの中心座標は(375,1400)
+    };
+    document.getElementById("SouthAmerica").onclick = function (event) {
+        choose_region(2841,1575,2.0) //アフリカの中心座標は(375,1400)
+    };
+    //引数の座標(画像上の座標)がブラウザの中心に来るように移動
+    function choose_region(x_image_pos,y_image_pos,scale){
+        photo_scale_reset();
+
+        var window_w = window.innerWidth; //ブラウザの幅
+        var window_h = window.innerHeight; //ブラウザの高さ
+        var natural_w = parseFloat(document.getElementById('input-image').naturalWidth); //元画像の幅
+        var natural_h = parseFloat(document.getElementById('input-image').naturalHeight); //元画像の高さ
+        var current_top = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top'))
+        var current_left = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left'))
+        var current_w = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width'))
+        var current_h = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height'))
+        var move_x = window_w/2 - (current_w / natural_w * x_image_pos + (window_w-current_w)/2)
+        var move_y = window_h/2 - (current_h / natural_h * y_image_pos + (window_h-current_h)/2)
+        $(".input-image").css({
+            left: current_left + move_x + 'px',
+            top: current_top + move_y + 'px',
+        });
+
+        photo_scale_change(scale)
+        current_top = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top'))
+        current_left = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left'))
+        current_w = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width'))
+        current_h = parseFloat(window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height'))
+        var top_pos  = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top');
+        var left_pos  = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left');
+        var img_h  = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
+        var img_w  = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width');
+        var img_top_abs = parseFloat(top_pos) - (parseFloat(img_h) / 2);
+        var img_left_abs = parseFloat(left_pos) - (parseFloat(img_w) / 2);
+        // 画像上のマウス位置
+        var img_mouse_x = window_w/2 - img_left_abs //現在のブラウザの中心に存在する画像上のピクセル
+        var img_mouse_y = window_h/2 - img_top_abs //現在のブラウザの中心に存在する画像上のピクセル
+        img_mouse_x = (natural_w / current_w) * img_mouse_x //元画像上のマウス位置
+        img_mouse_y = (natural_h / current_h) * img_mouse_y //元画像上のマウス位置
+        var differ_x = img_mouse_x - x_image_pos
+        var differ_y = img_mouse_y - y_image_pos
+        move_x = current_w / natural_w * differ_x
+        move_y = current_h / natural_h * differ_y
+        $(".input-image").css({
+            left: current_left + move_x + 'px',
+            top: current_top + move_y + 'px',
+        });
+    };
     // Game1ボタン（国名➡首都をあてるゲーム）
     document.getElementById("game1").onclick = function (event) {
         document.getElementById("game1").style.backgroundColor ="limegreen";
@@ -372,9 +461,9 @@ try{
                 completed_country_display(clear_game2)//@完了！
             }
             UpdateDB(correct_country,game_number) //テスト
-            alert("正解")
+            // alert("正解")
         }else{
-            alert("残念")
+            // alert("残念")
         }
     }
     document.getElementById("select2").onclick = function (event) {
@@ -387,9 +476,9 @@ try{
                 completed_country_display(clear_game2)//@完了！
             }
             UpdateDB(correct_country,game_number) //テスト
-            alert("正解")
+            // alert("正解")
         }else{
-            alert("残念")
+            // alert("残念")
         }
     }
     document.getElementById("select3").onclick = function (event) {
@@ -402,9 +491,9 @@ try{
                 completed_country_display(clear_game2)//@完了！
             }
             UpdateDB(correct_country,game_number) //テスト
-            alert("正解")
+            // alert("正解")
         }else{
-            alert("残念")
+            // alert("残念")
         }
     }
     document.getElementById("select4").onclick = function (event) {
@@ -417,9 +506,9 @@ try{
                 completed_country_display(clear_game2)//@完了！
             }
             UpdateDB(correct_country,game_number) //テスト
-            alert("正解")
+            // alert("正解")
         }else{
-            alert("残念")
+            // alert("残念")
         }
     }
     // 縮小ボタン
@@ -462,7 +551,6 @@ try{
             $(".menu_icon").text("×");
             menu_open_flg=true
         }
-
     }
     // データ削除ボタン（登録モードのとき）
     // 選択されている国を登録から削除する
@@ -572,7 +660,7 @@ try{
             // 拡大
             // photo_scale_bigger();
             const startTime = Date.now();
-            photo_scale_change(1.05);
+            photo_scale_change(1.2);
             const endTime = Date.now();
             var time=endTime-startTime;
             console.log("拡大の処理時間： " + time +"msec");
@@ -580,7 +668,7 @@ try{
         }else{
             // 縮小
             // photo_scale_smaller();
-            photo_scale_change(0.95);
+            photo_scale_change(0.80);
         }
     });
 
@@ -624,41 +712,26 @@ try{
             str_left = str_left + "px"
             pin_top = parseFloat(window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('top')) + diff_y
             pin_left = parseFloat(window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('left')) + diff_x
-            document.getElementById("input-image").style.top = str_top;
-            document.getElementById("input-image").style.left = str_left;
-            document.getElementById("input-image_base").style.top = str_top;
-            document.getElementById("input-image_base").style.left = str_left;
-            if(game_number==1){
-                clear_game1.forEach(function( value, index ) {　//@完了！
-                    var id = "input-country" + (index+1)
-                    document.getElementById(id).style.top = str_top;
-                    document.getElementById(id).style.left = str_left;
-                });
-            }else{
-                clear_game2.forEach(function( value, index ) {　//@完了！
-                    var id = "input-country" + (index+1)
-                    document.getElementById(id).style.top = str_top;
-                    document.getElementById(id).style.left = str_left;
-                });
-            }
-
+            $(".input-image").css({ //コード整理
+                top: str_top,
+                left: str_left,
+            });
             document.getElementById("droppin").style.top = pin_top+"px";
             document.getElementById("droppin").style.left = pin_left+"px";
             mX_before = mX;
             mY_before = mY;
         }
     };
-
+    //画像表示領域でのドラッグ選択禁止
     document.addEventListener('dragstart', function(event) {
-    const draggable = event.target.getAttribute('draggable');
-    // 明示的にdraggableにしている要素以外ドラッグ禁止
-    if (!draggable || draggable === 'auto') {
-        event.preventDefault();
-    }
+        const draggable = event.target.getAttribute('draggable');
+        // 明示的にdraggableにしている要素以外ドラッグ禁止
+        if (!draggable || draggable === 'auto') {
+            event.preventDefault();
+        }
     });
     // マウスポインタの位置
     document.addEventListener("mousemove", function(e){
-        const startTime = Date.now() //debug
         mX = e.pageX;  //X座標
         mY = e.pageY;  //Y座標
         //座標を表示する
@@ -668,24 +741,26 @@ try{
             //範囲外
             document.getElementById("vertical").style.display = 'none';
             document.getElementById("horizontal").style.display = 'none';
+            elem = document.getElementById('select_image')
+            elem.src = "country_img/skelton.png";
             return
         }
         //縦線表示
         var X = mX;
-        document.getElementById("vertical").style.left = X + 'px';
-        document.getElementById("vertical").style.display = 'inline-block';
+        $("#vertical").css({ //コード整理
+            left: X + 'px',
+            display: 'inline-block',
+        });
         //横線表示
         var Y = mY;
-        document.getElementById("horizontal").style.top = Y + 'px';
-        document.getElementById("horizontal").style.display = 'inline-block';
+        $("#horizontal").css({ //コード整理
+            top: Y + 'px',
+            display: 'inline-block',
+        });
         //座標の表示
-        position_display();
-        country_display(Math.round(Org_mouse_x),Math.round(Org_mouse_y));
-        image_move();
-        //debug
-        const endTime = Date.now();
-        var time=endTime-startTime;
-        console.log("マウス移動の処理時間： " + time +"msec");
+        position_display(); //管理モード時のみ座標表示
+        country_display(Math.round(Org_mouse_x),Math.round(Org_mouse_y)); //ホバー時の国の表示
+        image_move(); //クリック＆ムーブが起きた時だけ実行
     });
     function position_display(){
         //画像上のマウスの位置
@@ -699,8 +774,6 @@ try{
         img_top_abs = parseFloat(top_pos) - (parseFloat(img_h) / 2);
         img_left_abs = parseFloat(left_pos) - (parseFloat(img_w) / 2);
         // 画像上のマウス位置
-        // img_mouse_x = Math.round(mX - img_left_abs)
-        // img_mouse_y = Math.round(mY - img_top_abs)
         img_mouse_x = mX - img_left_abs
         img_mouse_y = mY - img_top_abs
         // 画像上のマウス位置表示
@@ -709,8 +782,6 @@ try{
         // オリジナル画像に対するマウス位置
         OrgWidth = parseFloat(document.getElementById('input-image').naturalWidth);
         OrgHeight = parseFloat(document.getElementById('input-image').naturalHeight);
-        // Org_mouse_x = Math.round((OrgWidth / parseFloat(img_w)) * img_mouse_x);
-        // Org_mouse_y = Math.round((OrgHeight / parseFloat(img_h)) * img_mouse_y);
         Org_mouse_x = (OrgWidth / parseFloat(img_w) * img_mouse_x);
         Org_mouse_y = (OrgHeight / parseFloat(img_h) * img_mouse_y);
         m_position = document.getElementById('org-position')
@@ -755,31 +826,13 @@ try{
         style_size_h = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
         style_size = parseFloat(style_size) * scale
         style_size_h = parseFloat(style_size_h) * scale
-        document.getElementById("input-image").style.width = style_size+"px";
-        document.getElementById("input-image").style.height = style_size_h+"px";
-        document.getElementById("input-image").style.maxWidth = 'initial';
-        document.getElementById("input-image").style.maxHeight = 'initial';
-        document.getElementById("input-image_base").style.width = style_size+"px";
-        document.getElementById("input-image_base").style.height = style_size_h+"px";
-        document.getElementById("input-image_base").style.maxWidth = 'initial';
-        document.getElementById("input-image_base").style.maxHeight = 'initial';
-        if(game_number==1){
-            clear_game1.forEach(function( value, index ) {//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.width = style_size+"px";
-                document.getElementById(id).style.height = style_size_h+"px";
-                document.getElementById(id).style.maxWidth = 'initial';
-                document.getElementById(id).style.maxHeight = 'initial';
-            });
-        }else{
-            clear_game2.forEach(function( value, index ) {//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.width = style_size+"px";
-                document.getElementById(id).style.height = style_size_h+"px";
-                document.getElementById(id).style.maxWidth = 'initial';
-                document.getElementById(id).style.maxHeight = 'initial';
-            });
-        }
+
+        $(".input-image").css({ //コード整理
+            width: style_size+"px",
+            height: style_size_h+"px",
+            maxWidth: 'initial',
+            maxHeight: 'initial',
+        });
         if(hoverFlag==false){ //hover時のborderプロパティで判断（greenなら）
             //範囲外
             //マウスポインタが画像に乗っていない時は以下実行しない（ボタンでサイズ変更したとき）
@@ -802,22 +855,9 @@ try{
         pin_differ_x = parseFloat(width_after) / parseFloat(OrgWidth) * pin_differ_x
         var pin_left_val = window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('left');
         var left_set_val = parseFloat(pin_left_val) + differ_x - pin_differ_x //differ_x - pin_differ_xで画像とPINの２重移動を補正
-        //--------------------------------------------------------------------
-        document.getElementById("input-image").style.left = set_val + 'px';
-        document.getElementById("input-image_base").style.left = set_val + 'px';
-        if(game_number==1){
-            clear_game1.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.left = set_val + 'px';
-            });
-        }else{
-            clear_game2.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.left = set_val + 'px';
-            });
-        }
-
-        //--------------------------------------------------------------------
+        $(".input-image").css({ //コード整理
+            left: set_val + 'px',
+        });
         document.getElementById("droppin").style.left = left_set_val + 'px';
         //Y方向の計算・移動
         var differ_y = Org_mouse_y - Org_mouse_y1
@@ -829,63 +869,24 @@ try{
         pin_differ_y = parseFloat(height_after) / parseFloat(OrgHeight) * pin_differ_y
         var pin_top_val = window.getComputedStyle(document.getElementById("droppin"), null).getPropertyValue('top');
         var top_set_val = parseFloat(pin_top_val) + differ_y - pin_differ_y //differ_x - pin_differ_xで画像とPINの２重移動を補正
-        document.getElementById("input-image").style.top = set_val + 'px';
-        document.getElementById("input-image_base").style.top = set_val + 'px';
-        if(game_number==1){
-            clear_game1.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.top = set_val + 'px';
-            });
-        }else{
-            clear_game2.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.top = set_val + 'px';
-            });
-        }
-
+        $(".input-image").css({ //コード整理
+            top: set_val + 'px',
+        });
         document.getElementById("droppin").style.top = top_set_val + 'px';
     };
 
     // 画像サイズリセット
     function photo_scale_reset() {
-        document.getElementById("input-image").style.width = 'auto';
-        document.getElementById("input-image").style.height = 'auto';
-        document.getElementById("input-image").style.maxWidth = '100%';
-        document.getElementById("input-image").style.maxHeight = '100%';
-        document.getElementById("input-image").style.top = '50%';
-        document.getElementById("input-image").style.left = '50%';
-        document.getElementById("input-image").style.transform = 'translate(-50%, -50%)';
-        document.getElementById("input-image_base").style.width = 'auto';
-        document.getElementById("input-image_base").style.height = 'auto';
-        document.getElementById("input-image_base").style.maxWidth = '100%';
-        document.getElementById("input-image_base").style.maxHeight = '100%';
-        document.getElementById("input-image_base").style.top = '50%';
-        document.getElementById("input-image_base").style.left = '50%';
-        document.getElementById("input-image_base").style.transform = 'translate(-50%, -50%)';
-        if(game_number==1){
-            clear_game1.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.width = 'auto';
-                document.getElementById(id).style.height = 'auto';
-                document.getElementById(id).style.maxWidth = '100%';
-                document.getElementById(id).style.maxHeight = '100%';
-                document.getElementById(id).style.top = '50%';
-                document.getElementById(id).style.left = '50%';
-                document.getElementById(id).style.transform = 'translate(-50%, -50%)';
-            });
-        }else{
-            clear_game2.forEach(function( value, index ) {　//@完了！
-                var id = "input-country" + (index+1)
-                document.getElementById(id).style.width = 'auto';
-                document.getElementById(id).style.height = 'auto';
-                document.getElementById(id).style.maxWidth = '100%';
-                document.getElementById(id).style.maxHeight = '100%';
-                document.getElementById(id).style.top = '50%';
-                document.getElementById(id).style.left = '50%';
-                document.getElementById(id).style.transform = 'translate(-50%, -50%)';
-            });
-        }
-
+        $(".input-image").css({ //コード整理
+            width: 'auto',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+        });
+        photo_scale_change(1)
         document.getElementById("droppin").style.display = 'none';
         send_pos_data="";
         region_index = 2;
@@ -1001,9 +1002,9 @@ try{
         $("#loading").remove();
     }
 
-    //テスト
+    //非同期でDBに登録
     function UpdateDB(correct_country,game_num){
-        alert("AJAXをキック（処理開始）")
+        console.log("AJAXをキック（処理開始）") //debug
         $.ajax({
             type:'GET', // リクエストのタイプはGETです
             url: '/UpdateDB', // URLは"/meals"を指定します
@@ -1012,11 +1013,11 @@ try{
         })
         .done(function(data){
         // 通信に成功した場合の処理です
-            alert("非同期通信完了！")
+            console.log("非同期通信完了！") //debug
         })
         .fail(function(){
             // 通信に失敗した場合の処理です
-            alert('非同期通信失敗！')
+            console.log('非同期通信失敗！') //debug
         })
     }
 

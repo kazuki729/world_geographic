@@ -41,6 +41,22 @@ class HomeController < ApplicationController
     end
   end
   
+  # #リサイズメソッド
+  # def batch_skelton()
+  #   input_dir = "public/入力フォルダ/" #入力フォルダ
+  #   output_dir = "public/出力フォルダ/" #出力フォルダ
+  #   files = []
+  #   files = list_files(input_dir)
+  #   files.each do |fileName|
+  #     # img = Magick::ImageList.new("#{input_dir}#{fileName}")
+  #     img = Magick::Image.read("#{input_dir}#{fileName}").first
+  #     new_img = img.resize_to_fit(100, 9999)
+  #     new_img.write("#{output_dir}#{fileName}")
+  #     new_img.destroy!
+  #   end
+  #   redirect_to '/'
+  # end
+
   #画像透明化のバッチ処理アクション
   def batch_skelton()
     #================================================
@@ -80,7 +96,7 @@ class HomeController < ApplicationController
     puts "----------------------------------"
     redirect_to '/'
   end
-
+ 
   #ディレクトリ以下のファイルを取得
   def list_files(dirpath)
     fileplace = []
@@ -153,6 +169,7 @@ class HomeController < ApplicationController
     img = img.matte_floodfill(0, 0)
     # img = img.matte_floodfill(100, 100) # (100,100)のピクセルと同じ色は透明にする
     img.write('public/テスト画像.png') # 画像保存
+    img = img.resize_to_fit(1980, 9999) #リサイズ.小さい方の数値で縦横比固定でリサイズされる
     img.write("public/country_img/green/#{@country}.png") # 画像保存
     image_color_change(img) #青色に変換
     img = img.matte_floodfill(0, 0) #周りを透明化
