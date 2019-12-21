@@ -13,6 +13,8 @@ Rails.application.routes.draw do
   post   '/login',   to: 'sessions#create'
   delete '/logout',  to: 'sessions#destroy'
 
+  get 'image/:id/:game_num', to: 'home#image' #imgタグで画像取得用
+
   get '/UpdateDB' =>'home#UpdateDB'
   resources :users #usersに関する標準アクションが用意される
 end

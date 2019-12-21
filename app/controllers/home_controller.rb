@@ -7,10 +7,33 @@ class HomeController < ApplicationController
   require 'objspace'
   require 'time'
 
-  # memo = ObjectSpace.memsize_of(@country_list) / 1024.00
-
-
   $filepath = "public/country.txt"
+
+  #DBに登録されているバイナリ画像をビューへ送信
+  def image #==game1==
+    game = Game.find_by(user_id: current_user.id)
+    if game == nil
+      img = Magick::ImageList.new("public/country_img/world_map.png")
+      send_data img.to_blob, type: 'image/jpeg', disposition: 'inline'
+      return
+    end
+    if params[:game_num]=="1"
+      if game.image1 == nil
+        img = Magick::ImageList.new("public/country_img/world_map.png")
+        send_data img.to_blob, type: 'image/jpeg', disposition: 'inline'
+      else
+        send_data game.image1, type: 'image/jpeg', disposition: 'inline'
+      end
+    else #==game2==
+      if game.image2 == nil
+        img = Magick::ImageList.new("public/country_img/world_map.png")
+        send_data img.to_blob, type: 'image/jpeg', disposition: 'inline'
+      else
+        send_data game.image2, type: 'image/jpeg', disposition: 'inline'
+      end
+    end
+    puts "データ送りましたーーー{#{params[:game_num]}}"
+  end
 
   def top
     #action:proccess経由で来た時は、params[]を持っている
@@ -169,7 +192,6 @@ class HomeController < ApplicationController
     img = img.matte_floodfill(0, 0)
     # img = img.matte_floodfill(100, 100) # (100,100)のピクセルと同じ色は透明にする
     img.write('public/テスト画像.png') # 画像保存
-    img = img.resize_to_fit(1980, 9999) #リサイズ.小さい方の数値で縦横比固定でリサイズされる
     img.write("public/country_img/green/#{@country}.png") # 画像保存
     image_color_change(img) #青色に変換
     img = img.matte_floodfill(0, 0) #周りを透明化
@@ -238,7 +260,7 @@ class HomeController < ApplicationController
                     && img.export_pixels(arr[0]+1,arr[1],1,1)[1].to_i != 65535
             img.pixel_color(arr[0]+1,arr[1],Magick::Pixel.new(0,65535,0))
             temp<<[arr[0]+1,arr[1]]
-            puts "➡"
+            puts "右"
           end
         end
         # 下
@@ -318,40 +340,66 @@ class HomeController < ApplicationController
         #current_user.idさんはデータ初登録
         game = Game.new
         game.user_id = current_user.id
-        if params[:game]=="1"
+        if params[:game]=="1" #==game1==
           game.country = params[:correct_country]
+          merge_1(game,params[:correct_country])
           game.save
           puts "ゲーム１クリア情報更新(新規データ)：#{game.country}"
-        else
+        else #==game2==
           game.capital = params[:correct_country]
+          merge_2(game,params[:correct_country])
           game.save
           puts "ゲーム２クリア情報更新(新規データ)：#{game.capital}"
         end
       else
         #データに上書きする
-        if params[:game]=="1"
+        if params[:game]=="1" #==game1==
           if game.country != nil
             game.country = game.country + "," + params[:correct_country]
+            merge_1(game,params[:correct_country])
             game.save
           else
             game.country = params[:correct_country]
+            merge_1(game,params[:correct_country])
             game.save
           end
           puts "ゲーム１クリア情報更新：#{game.country}"
-        else
+        else #==game2==
           if game.capital != nil
             game.capital = game.capital + "," + params[:correct_country]
+            merge_2(game,params[:correct_country])
             game.save
           else
             game.capital = params[:correct_country]
+            merge_2(game,params[:correct_country])
             game.save
           end
           puts "ゲーム２クリア情報更新：#{game.capital}"
         end
       end
     end
+  end
 
-
-
+  # 画像を合成して、バイナリデータにして、DBに登録(game1用)
+  def merge_1(game,clear_c)
+    if game.image1 == nil
+      imageListFrom = Magick::ImageList.new("public/country_img/world_map.png")
+    else
+      imageListFrom = Magick::Image.from_blob(game.image1).shift #DBから取得したバイナリを読込
+    end
+    imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
+    imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
+    game.image1 = imageList.to_blob #バイナリをDBへ保存
+  end
+  # 画像を合成して、バイナリデータにして、DBに登録(game2用)
+  def merge_2(game,clear_c)
+      if game.image2 == nil
+      imageListFrom = Magick::ImageList.new("public/country_img/world_map.png")
+    else
+      imageListFrom = Magick::Image.from_blob(game.image2).shift #DBから取得したバイナリを読込
+    end
+    imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
+    imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
+    game.image2 = imageList.to_blob #バイナリをDBへ保存
   end
 end

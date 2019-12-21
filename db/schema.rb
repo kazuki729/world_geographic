@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_07_003728) do
+ActiveRecord::Schema.define(version: 2019_12_21_072411) do
 
   create_table "games", force: :cascade do |t|
     t.integer "user_id"
@@ -18,6 +18,8 @@ ActiveRecord::Schema.define(version: 2019_12_07_003728) do
     t.text "capital"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.binary "image1"
+    t.binary "image2"
   end
 
   create_table "users", force: :cascade do |t|

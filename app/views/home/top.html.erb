@@ -2,16 +2,18 @@
   【画像表示の仕組み】
     １．画像表示は3層で構築
         ➡world_map.png -> 第4層（最背面）世界地図の全体画像(3725x2048).
-        ➡pile_image    -> 第3層（中間層）ゲームクリアした国を追加していくスペース(1980x1238).
+        ➡pile_image    -> 第3層（中間層）ゲームクリアした国を表示.
         ➡select_iamge  -> 第2層（中間層）現在、マウスでポイントしている国を表示.
         ➡skelton_image -> 第1層（最前面）透明な画像(3725x2048).
     ２．国の特定方法
         ➡skelton_imageの中でどの座標をポイントしているかを取得(3725x2048)
         ➡国の座標情報を記録したデータから取得座標で検索して、国を特定する
         ➡その国をselect_imageに入れる
-    ３．注意点
-        ➡pile_imageは最大100枚以上表示するため、画像サイズを小さくしている.
-        ➡国の座標情報を記録したデータは【3725x2048】内の座標.※【1980x1238】ではない！！
+    ３．正解した時のフロー
+        ➡正解した国を第3層に追加・表示 ※常に1枚（毎回上書き）
+        ➡正解した国名をDBに登録（非同期通信）
+        ➡正解した国をバイナリ画像に追加合成して、DBに登録（非同期通信）
+        ➡非同期通信完了時に、最新のバイナリ画像をDBから取得して表示
   -->
 <!-- 設定メニュー -->
 <div class="wrapper">
@@ -114,7 +116,7 @@
 <div class="display-space" id="display-space">
     <!--  画像処理後の表示 -->
     <% if @top!=nil %>
-        <img src="country_img/world_map.png" class="input-image" id="input-image_base" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+        <img src="/image/1/1" class="input-image" id="input-image_base" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
         <div id="pile_image">
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1..) -->
         </div>
@@ -123,7 +125,7 @@
         <img src="country_img/skelton.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
     <!--  初期の表示（全体と透明マップ） -->
     <% else %>
-        <img src="country_img/world_map.png" class="input-image" id="input-image_base">
+        <img src="/image/1/1" class="input-image" id="input-image_base">
         <div id="pile_image">
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1~[クリア数]) -->
         </div>
@@ -169,7 +171,7 @@ try{
     var mY_start = 0;
     var drag_flg = false
     var out_range_flg = false
-    const mode = document.getElementsByName("mode");
+    var mode = document.getElementsByName("mode");
     var mX_before = 0;
     var mY_before = 0;
     var img_move_flg = false; //マウスダウン中はtrue,マウスアップ中はfalse
@@ -185,7 +187,7 @@ try{
     var game_number =1; //選択されているgame番号[1:game1 2:game2]
     var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
     var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
-    // clear_game1 = "afghanistan,algeria,angola,argentina,armenia,australia,austria,azerbaijan,bangladesh,belgium,belize,benin,bhutan,bolivia"
+    var unique_num = 2 //非同期通信が発生する度にカウントアップ（srcにセットするURLがユニークでないと、再レンダリングされないから）
 
     if(clear_game1 ==""){
         clear_game1=[]
@@ -197,7 +199,6 @@ try{
     }else{
         clear_game2 = clear_game2.split(','); //配列に分割
     }
-    completed_country_display(clear_game1) //最初はgame1の設定からスタート
     // publicフォルダからの相対パスで指定
     var country_table = [];
     readTextFile("country.txt")
@@ -275,18 +276,17 @@ try{
         elem_count.innerHTML = '<span id="country_count">データ登録数：'+ country_count +'カ国</span>'
     }
 
-    //クリアしている国を塗る
+    //クリア国を一時的に表示（DB登録と画像合成完了するまで必要なため）
     function completed_country_display(clear_country) {
-        // clear_country=["japan","china"]
-        var str = make_html(clear_country)
+        var str = '<img src="country_img/green/'+clear_country+'.png" class="input-image">'
         elem = document.getElementById('pile_image')
-        elem.innerHTML = str
+        elem.innerHTML = str //pile_imageには直近の正解画像1枚を表示
         //位置調整
         var top = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('top');
         var left = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('left');
         var width = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('width');
         var height = window.getComputedStyle(document.getElementById("input-image"), null).getPropertyValue('height');
-        $(".input-image").css({ //コード整理
+        $(".input-image").css({
             top: top,
             left: left,
             width: width,
@@ -317,16 +317,6 @@ try{
             elem = document.getElementById('select_image')
             elem.src = "country_img/skelton.png";
         }
-    }
-    //クリアした国をimgタグ化する
-    function make_html(arr) {
-        var inner_html = ''
-        var i = 1
-        arr.forEach(function( country ) {
-            inner_html = inner_html + '<img src="country_img/green/'+country+'.png" class="input-image" id="input-country'+ i +'">'
-            i=i+1
-        });
-        return inner_html
     }
     function readTextFile(file){
         var rawFile = new XMLHttpRequest();
@@ -440,27 +430,35 @@ try{
     document.getElementById("game1").onclick = function (event) {
         document.getElementById("game1").style.backgroundColor ="limegreen";
         document.getElementById("game2").style.backgroundColor ="initial";
-        completed_country_display(clear_game1) //クリア国の表示切り替え
+        elem = document.getElementById('input-image_base') //デバッグ
+        elem.src='/image/'+ unique_num + "/1" //デバッグ
+        // completed_country_display(clear_game1) //クリア国の表示切り替え
+        document.getElementById('pile_image').innerHTML = "";
+        unique_num+=1;
         game_number=1;
     };
     // Game2ボタン（首都➡国名をあてるゲーム）
     document.getElementById("game2").onclick = function (event) {
         document.getElementById("game1").style.backgroundColor ="initial";
         document.getElementById("game2").style.backgroundColor ="limegreen";
-        completed_country_display(clear_game2) //クリア国の表示切り替え
+        // completed_country_display(clear_game2) //クリア国の表示切り替え
+        elem = document.getElementById('input-image_base') //デバッグ
+        elem.src='/image/'+ unique_num + "/2" //デバッグ
+        document.getElementById('pile_image').innerHTML = "";
+        unique_num+=1;
         game_number=2;
     };
     //選択肢ボタン
     document.getElementById("select1").onclick = function (event) {
         if(correct_option==1){
             if(game_number == 1){
-                clear_game1.push(correct_country) //@完了！
-                completed_country_display(clear_game1)//@完了！
+                clear_game1.push(correct_country)
+                completed_country_display(correct_country)
             }else{
-                clear_game2.push(correct_country) //@完了！
-                completed_country_display(clear_game2)//@完了！
+                clear_game2.push(correct_country)
+                completed_country_display(correct_country)
             }
-            UpdateDB(correct_country,game_number) //テスト
+            UpdateDB(correct_country,game_number) 
             // alert("正解")
         }else{
             // alert("残念")
@@ -469,13 +467,13 @@ try{
     document.getElementById("select2").onclick = function (event) {
         if(correct_option==2){
             if(game_number == 1){
-                clear_game1.push(correct_country) //@完了！
-                completed_country_display(clear_game1)//@完了！
+                clear_game1.push(correct_country)
+                completed_country_display(correct_country)
             }else{
-                clear_game2.push(correct_country) //@完了！
-                completed_country_display(clear_game2)//@完了！
+                clear_game2.push(correct_country)
+                completed_country_display(correct_country)
             }
-            UpdateDB(correct_country,game_number) //テスト
+            UpdateDB(correct_country,game_number)
             // alert("正解")
         }else{
             // alert("残念")
@@ -484,13 +482,13 @@ try{
     document.getElementById("select3").onclick = function (event) {
         if(correct_option==3){
             if(game_number == 1){
-                clear_game1.push(correct_country) //@完了！
-                completed_country_display(clear_game1)//@完了！
+                clear_game1.push(correct_country)
+                completed_country_display(correct_country)
             }else{
-                clear_game2.push(correct_country) //@完了！
-                completed_country_display(clear_game2)//@完了！
+                clear_game2.push(correct_country)
+                completed_country_display(correct_country)
             }
-            UpdateDB(correct_country,game_number) //テスト
+            UpdateDB(correct_country,game_number)
             // alert("正解")
         }else{
             // alert("残念")
@@ -499,13 +497,13 @@ try{
     document.getElementById("select4").onclick = function (event) {
         if(correct_option==4){
             if(game_number == 1){
-                clear_game1.push(correct_country) //@完了！
-                completed_country_display(clear_game1)//@完了！
+                clear_game1.push(correct_country)
+                completed_country_display(correct_country)
             }else{
-                clear_game2.push(correct_country) //@完了！
-                completed_country_display(clear_game2)//@完了！
+                clear_game2.push(correct_country)
+                completed_country_display(correct_country)
             }
-            UpdateDB(correct_country,game_number) //テスト
+            UpdateDB(correct_country,game_number)
             // alert("正解")
         }else{
             // alert("残念")
@@ -513,19 +511,14 @@ try{
     }
     // 縮小ボタン
     document.getElementById("smaller").onclick = function (event) {
-        // 縮小
-        // photo_scale_smaller();
         photo_scale_change(0.95);
     }
     // 拡大ボタン
     document.getElementById("bigger").onclick = function (event) {
-        // 拡大
-        // photo_scale_bigger();
         photo_scale_change(1.05);
     }
     // リセットボタン
     document.getElementById("reset").onclick = function (event) {
-        // リセット
         photo_scale_reset();
     }
     // menu開くボタンクリック
@@ -556,7 +549,6 @@ try{
     // 選択されている国を登録から削除する
     // データを削除したテキスト内容をコントローラに送る
     document.getElementById("delete").onclick = function (event) {
-        // 削除
         var delete_key = $('#delete_menu option:selected').text(); //例：japan
         //データを削除するpostリクエスト
         postDeleteCountry(delete_key);
@@ -1001,7 +993,6 @@ try{
     function removeLoading(){
         $("#loading").remove();
     }
-
     //非同期でDBに登録
     function UpdateDB(correct_country,game_num){
         console.log("AJAXをキック（処理開始）") //debug
@@ -1014,10 +1005,14 @@ try{
         .done(function(data){
         // 通信に成功した場合の処理です
             console.log("非同期通信完了！") //debug
+            elem = document.getElementById('input-image_base')
+            elem.src='/image/'+ unique_num + "/" + game_number //DBからバイナリ画像取得
+            unique_num = unique_num + 1
         })
         .fail(function(){
             // 通信に失敗した場合の処理です
             console.log('非同期通信失敗！') //debug
+            alert('非同期通信失敗！')
         })
     }
 
