@@ -390,10 +390,11 @@ class HomeController < ApplicationController
     imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
     imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
     game.image1 = imageList.to_blob #バイナリをDBへ保存
+    puts "メモリ解放開始！merge_1"
     imageListFrom.destroy!
     imageListFrame.destroy!
     imageList.destroy!
-    puts "メモリ解放！merge_1"
+    puts "メモリ解放完了！merge_1"
   end
   # 画像を合成して、バイナリデータにして、DBに登録(game2用)
   def merge_2(game,clear_c)
@@ -405,9 +406,10 @@ class HomeController < ApplicationController
     imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
     imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
     game.image2 = imageList.to_blob #バイナリをDBへ保存
+    puts "メモリ解放開始！merge_2"
     imageListFrom.destroy!
     imageListFrame.destroy!
     imageList.destroy!
-    puts "メモリ解放！merge_2"
+    puts "メモリ解放完了！merge_2"
   end
 end
