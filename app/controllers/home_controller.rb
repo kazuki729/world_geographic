@@ -390,10 +390,13 @@ class HomeController < ApplicationController
     imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
     imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
     game.image1 = imageList.to_blob #バイナリをDBへ保存
+    imageListFrom.destroy!
+    imageListFrame.destroy!
+    imageList.destroy!
   end
   # 画像を合成して、バイナリデータにして、DBに登録(game2用)
   def merge_2(game,clear_c)
-      if game.image2 == nil
+    if game.image2 == nil
       imageListFrom = Magick::ImageList.new("public/country_img/world_map.png")
     else
       imageListFrom = Magick::Image.from_blob(game.image2).shift #DBから取得したバイナリを読込
@@ -401,5 +404,8 @@ class HomeController < ApplicationController
     imageListFrame = Magick::ImageList.new("public/country_img/green/#{clear_c}.png")
     imageList = imageListFrom.composite(imageListFrame, 0, 0, Magick::OverCompositeOp) #画像合成
     game.image2 = imageList.to_blob #バイナリをDBへ保存
+    imageListFrom.destroy!
+    imageListFrame.destroy!
+    imageList.destroy!
   end
 end
