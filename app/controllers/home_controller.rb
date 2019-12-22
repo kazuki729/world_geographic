@@ -393,6 +393,7 @@ class HomeController < ApplicationController
     imageListFrom.destroy!
     imageListFrame.destroy!
     imageList.destroy!
+    puts "メモリ解放！merge_1"
   end
   # 画像を合成して、バイナリデータにして、DBに登録(game2用)
   def merge_2(game,clear_c)
@@ -407,5 +408,6 @@ class HomeController < ApplicationController
     imageListFrom.destroy!
     imageListFrame.destroy!
     imageList.destroy!
+    puts "メモリ解放！merge_2"
   end
 end
