@@ -15,12 +15,14 @@
         ➡正解した国をバイナリ画像に追加合成して、DBに登録（非同期通信）
         ➡非同期通信完了時に、最新のバイナリ画像をDBから取得して表示
   -->
+
 <!-- 設定メニュー -->
-<div class="wrapper">
+<div class="wrapper animsition">
     <header>
         <div></div>
         <p>WorldGeographic</p>
     </header>
+
     <!-- ログイン中の画面 -->
     <div>
         <span class="side-menu-que">問題形式</span>
@@ -28,18 +30,18 @@
         <span class="btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="game2">国名➡首都</span>
         <br>
         <span class="side-menu-que">出題地域</span>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Europe">ヨーロッパ</span>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Asia">アジア</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="Europe">ヨーロッパ</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="Asia">アジア</span>
         <br>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Africa">アフリカ</span>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="Oceania">オセアニア</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="Africa">アフリカ</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="Oceania">オセアニア</span>
         <br>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="NorthAmerica">北アメリカ</span>
-        <span class="Region btn btn-outline-danger text-white mt-2 mb-3 ml-4" id="SouthAmerica">南アメリカ</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="NorthAmerica">北アメリカ</span>
+        <span class="Region btn btn-outline-primary text-white mt-2 mb-3 ml-4" id="SouthAmerica">南アメリカ</span>
 
         <% if logged_in? %>
             <div style="font-size:0;"><!-- ログアウトの上に余白があるため -->
-                <%= link_to "マイページ", current_user, class: "side-menu", style: "border-top:1px solid white;" %><br>
+                <%= link_to "マイページ", current_user, class: "side-menu", style: "border-top:1px solid white;", data: {"turbolinks" => false} %><br>
                 <%= link_to "ログアウト", logout_path, method: :delete, class: "side-menu" %>
             </div>
         <% else %>
@@ -113,7 +115,11 @@
 </div>
 
 <!-- 画像表示ゾーン -->
-<div class="display-space" id="display-space">
+<div class="display-space animsition" id="display-space"
+    data-animsition-in-class="fade-in-right"
+    data-animsition-in-duration="1000"
+    data-animsition-out-class="fade-out-right"
+    data-animsition-out-duration="800">
     <!--  画像処理後の表示 -->
     <% if @top!=nil %>
         <img src="/image/1/1" class="input-image" id="input-image_base" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
@@ -121,8 +127,8 @@
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1..) -->
         </div>
          <!-- 選択中の国を表示(青) -->
-        <img src="country_img/skelton.png" class="input-image" id="select_image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
-        <img src="country_img/skelton.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+        <img src="/country_img/skelton.png" class="input-image" id="select_image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
+        <img src="/country_img/skelton.png" class="input-image" id="input-image" style="<%= "top: #{@top}; left: #{@left}; width: #{@width}; height: #{@height}; max-width: initial; max-height: initial;" %>">
     <!--  初期の表示（全体と透明マップ） -->
     <% else %>
         <img src="/image/1/1" class="input-image" id="input-image_base">
@@ -130,21 +136,33 @@
             <!-- クリアした国をJSで追加表示する(タグIDはcountry_image1~[クリア数]) -->
         </div>
         <!-- 選択中の国を表示(青) -->
-        <img src="country_img/skelton.png" class="input-image" id="select_image">
-        <img src="country_img/skelton.png" class="input-image" id="input-image"> <!-- 透明画像．画像はフルサイズ -->
+        <img src="/country_img/skelton.png" class="input-image" id="select_image">
+        <img src="/country_img/skelton.png" class="input-image" id="input-image"> <!-- 透明画像．画像はフルサイズ -->
     <% end %>
     <span class="horizontal" id="horizontal"></span>
     <span class="vertical" id="vertical"></span>
-    <button class="menu_icon" id="menu_icon">×</button>
-    <button type="button" value="－縮小" id="smaller" class="smaller">‐</button>
-    <button type="button" value="＋拡大" id="bigger" class="bigger">+</button>
-    <button type="button" value="リセット" id="reset" class="reset">R</button>
+    <button class="menu_icon" id="menu_icon"></button>
+    <button type="button" value="－縮小" id="smaller" class="smaller"></button>
+    <button type="button" value="＋拡大" id="bigger" class="bigger"></button>
+    <button type="button" value="リセット" id="reset" class="reset"></button>
+    <div class="box9" id="answer_window">
+        世界地図をクリックして、問題に回答しよう
+        <div class="progress_bar"></div>
+    </div>
     <div class="" id="question"></div>
     <div class="balloon4" id="select1">選択１</div>
     <div class="balloon4" id="select2">選択２</div>
     <div class="balloon4" id="select3">選択３</div>
     <div class="balloon4" id="select4">選択４</div>
-    <div class="droppin" id="droppin"></div>
+    <div class="droppin" id="droppin"></div>    
+</div>
+<div class="full_image">
+    <!-- 画面切り替え時などに画像を画面全体に表示する -->
+    <h1 id="text-msg" class="animsition"
+                      data-animsition-in-class="flip-in-x-fr"
+                      data-animsition-in-duration="1000"
+                      data-animsition-out-class="flip-out-x-fr"
+                      data-animsition-out-duration="800">首都名を当てよう！</h1>
 </div>
 
 <!-- 以下、javascript -->
@@ -188,6 +206,7 @@ try{
     var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
     var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
     var unique_num = 2 //非同期通信が発生する度にカウントアップ（srcにセットするURLがユニークでないと、再レンダリングされないから）
+    var index = 0; //setIntervalのループ回数
 
     if(clear_game1 ==""){
         clear_game1=[]
@@ -210,6 +229,38 @@ try{
     $('.wrapper').hover(function() {
         hoverFlag=false
     });
+    $('.balloon4').hover(function() {
+        hoverFlag=false
+    });
+    $('#answer_window').hover(function() {
+        hoverFlag=false
+    });
+    $('.menu_icon').hover(function() {
+        hoverFlag=false
+    });
+    $('#reset').hover(function() {
+        hoverFlag=false
+    });
+    $('#smaller').hover(function() {
+        hoverFlag=false
+    });
+    $('#bigger').hover(function() {
+        hoverFlag=false
+    });
+    var link_to_page = false
+    $('.side-menu').hover(
+        function() {//要素上にマウスがある時
+            document.getElementById("vertical").style.display = 'none';
+            document.getElementById("horizontal").style.display = 'none';
+            elem = document.getElementById('select_image')
+            elem.src = "/country_img/skelton.png";
+            link_to_page=true
+        },
+        function() {//要素上にマウスがない時
+            link_to_page=false
+        }
+    );
+
     //重複なし乱数生成(0~入力値-1までの範囲で3つ取り出す)
     function random(arr_length, answer_index){
         var arr = [...Array(arr_length).keys()]
@@ -301,22 +352,44 @@ try{
         country_table.forEach(function( str ) {
             if(str.indexOf(pos_key) != -1){
                 var country = str.split('/')
-                //画像表示
-                // elem = document.getElementById('input-image')
-                elem = document.getElementById('select_image')
-                elem.src = "country_img/blue/"+country[0] + ".png";
-                m_position = document.getElementById('test')
-                m_position.innerHTML = '<span id="test">国名：'+country[0]+' 首都名'+ country[1] +'</span>'
-                now_country = country[0] //グローバル変数
-                now_capital = country[1] //グローバル変数
-                flg=true;
+                if(clear_or_yet(country[0], game_number)){
+                    //画像表示
+                    // elem = document.getElementById('input-image')
+                    elem = document.getElementById('select_image')
+                    elem.src = "country_img/blue/"+country[0] + ".png";
+                    m_position = document.getElementById('test')
+                    m_position.innerHTML = '<span id="test">国名：'+country[0]+' 首都名'+ country[1] +'</span>'
+                    now_country = country[0] //グローバル変数
+                    now_capital = country[1] //グローバル変数
+                    flg=true;
+                }
             }
         });
         //国の上にマウスがない時
         if(flg==false){
+            now_country=""
+            now_capital=""
             elem = document.getElementById('select_image')
-            elem.src = "country_img/skelton.png";
+            elem.src = "/country_img/skelton.png";
         }
+    }
+    //マウスで指した国がクリア国であるか判定[true:クリア済み false:未クリア]
+    function clear_or_yet(country, game_number) {
+        var bool = true
+        if(game_number == 1){
+            if(clear_game1.indexOf(country) != -1){
+                bool = false
+            }else{
+                bool=true
+            }
+        }else{
+            if(clear_game2.indexOf(country) != -1){
+                bool = false
+            }else{
+                bool=true
+            }
+        }
+        return bool
     }
     function readTextFile(file){
         var rawFile = new XMLHttpRequest();
@@ -326,16 +399,21 @@ try{
         rawFile.setRequestHeader('Pragma', 'no-cache');
         rawFile.setRequestHeader('Cache-Control', 'no-cache');
         rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+
         rawFile.onreadystatechange = function (){
-            dispLoading("データ取得中．．．")
+            // dispLoading("データ取得中．．．")
             if(rawFile.readyState === 4){
                 if(rawFile.status === 200 || rawFile.status == 0){
                     // alert("読み込み開始")
                     allText = rawFile.responseText;
                     country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
                     country_table = country_table.filter(Boolean); //空白除去
-                    country_table = sort_data(country_table)
+                    if("<%= current_user.id %>" == '1'){
+                        //sort_dataは処理時間がかかるので、管理モード時のみ実施
+                        country_table = sort_data(country_table)
+                    }
                     display_list() // ドロップダウンに国をリストする
+                    cashe() // ブルー画像をキャッシュ
                 }
                 else if(rawFile.status === 304){
                     alert("ステータスコード：304")
@@ -343,12 +421,26 @@ try{
                     allText="失敗"
                     alert("データ取得失敗")
                 }
-                removeLoading()
+                // removeLoading()
             }
+        }
+        rawFile.onprogress = function (e){
+            // e.loaded ダウンロード済み
+            // e.total 全体容量
+            // console.log('[progress] '+e.loaded+'/'+e.total)
         }
         rawFile.send(null);
     }
 
+    //国の画像をロード時にキャッシュする(100msecくらい)
+    function cashe(){
+        elem = document.getElementById('select_image')
+        country_list.forEach(function( country ) {
+            elem.src = "country_img/blue/"+country + ".png";
+            // console.log("country_img/blue/"+country + ".png")
+        });
+        elem.src = "/country_img/skelton.png";
+    }
     //--------------------------------------------------------------------
     // 登録モードボタン
     document.getElementById("mode").onclick = function (event) {
@@ -436,6 +528,7 @@ try{
         document.getElementById('pile_image').innerHTML = "";
         unique_num+=1;
         game_number=1;
+        game_change_action('国名を当てよう！')
     };
     // Game2ボタン（首都➡国名をあてるゲーム）
     document.getElementById("game2").onclick = function (event) {
@@ -447,7 +540,22 @@ try{
         document.getElementById('pile_image').innerHTML = "";
         unique_num+=1;
         game_number=2;
+        game_change_action('首都名を当てよう！')
     };
+
+    function game_change_action(txt){
+        document.getElementById('text-msg').textContent=txt
+        $('.full_image h1').animsition('in'); //アニメーション発火
+        $(".full_image").css({
+            display: 'initial',
+        });
+        var id = setInterval(function(){
+            $(".full_image").css({
+                display: 'none',
+            });
+            clearInterval(id);
+        }, 2000);//2秒後に画像消す
+    }
     //選択肢ボタン
     document.getElementById("select1").onclick = function (event) {
         if(correct_option==1){
@@ -458,7 +566,12 @@ try{
                 clear_game2.push(correct_country)
                 completed_country_display(correct_country)
             }
-            UpdateDB(correct_country,game_number) 
+            UpdateDB(correct_country,game_number)
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            progress(10000)
             // alert("正解")
         }else{
             // alert("残念")
@@ -474,6 +587,11 @@ try{
                 completed_country_display(correct_country)
             }
             UpdateDB(correct_country,game_number)
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            progress(10000)
             // alert("正解")
         }else{
             // alert("残念")
@@ -489,6 +607,11 @@ try{
                 completed_country_display(correct_country)
             }
             UpdateDB(correct_country,game_number)
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            progress(10000)
             // alert("正解")
         }else{
             // alert("残念")
@@ -504,10 +627,50 @@ try{
                 completed_country_display(correct_country)
             }
             UpdateDB(correct_country,game_number)
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            progress(10000)
             // alert("正解")
         }else{
             // alert("残念")
         }
+    }
+    //指定msec後にプログレスバーとウィンドウを非表示
+    function progress(hide_msec){
+        var span = 50
+        var render_count = hide_msec / span
+        var id = setInterval(function(){
+          display_progress(render_count); //繰返し実行する関数指定
+          if(index > render_count){　//setIntervalを止める条件
+            clearInterval(id);
+            $(".progress_bar").css({
+                display: 'none',
+            });
+            $(".progress_bar").css({
+                display: 'none',
+            });
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='世界地図をクリックして、問題に回答しよう<div class="progress_bar"></div>'
+            index=0;
+          }
+        }, span);
+    }
+    //プログレスバーの進捗を表示
+    function display_progress(render_count){
+        var wid = 500 / render_count * index
+        $(".progress_bar").css({
+            display: 'initial',
+            width: wid+'px',
+        });
+        index += 1
+    }
+    //選択肢の表示・非表示[none or initial]
+    function baloon_hide(option){
+        $(".balloon4").css({
+            "display": option,
+        });
     }
     // 縮小ボタン
     document.getElementById("smaller").onclick = function (event) {
@@ -530,8 +693,9 @@ try{
             });
             $(".menu_icon").css({
                 "left": "30px",
+                "background-image": "url(icon_header.png)",
             });
-            $(".menu_icon").text("M");
+            // $(".menu_icon").text("M");
             menu_open_flg=false
         }else{
             //開く処理
@@ -539,9 +703,10 @@ try{
                 "display": "initial",
             });
             $(".menu_icon").css({
-                "left": "320px",
+                "left": "275px",
+                "background-image": "url(close2.gif)",
             });
-            $(".menu_icon").text("×");
+            // $(".menu_icon").text("×");
             menu_open_flg=true
         }
     }
@@ -589,6 +754,9 @@ try{
                 alert("国名、首都名を入力してください")
             }
         }else{
+            if(now_country==""){
+                return
+            }
             // alert("管理モードがONになっていません！")
             var elem = document.getElementById("droppin")
             elem.style.left = mX - 10 + "px";
@@ -601,8 +769,8 @@ try{
             var num3 = random_num[2]
             var num4 = random_num[3]
             if(game_number==1){
-                var elem = document.getElementById("question")
-                elem.innerHTML = "選択した国の国名は次のうちどれでしょう？"
+                var elem = document.getElementById("answer_window")
+                elem.innerHTML = "選択した国の国名は次のうちどれでしょう？" +'<div class="progress_bar"></div>'
                 elem.style.display = "initial"
                 elem = document.getElementById("select1")
                 elem.style.display = "initial"
@@ -620,8 +788,8 @@ try{
                 correct_option = cards.indexOf(answer) + 1; //正解番号を記憶
                 correct_country = now_country;
             }else if(game_number==2){
-                var elem = document.getElementById("question")
-                elem.innerHTML = ""+ now_country +"の首都名は次のうちどれでしょう？"
+                var elem = document.getElementById("answer_window")
+                elem.innerHTML = ""+ now_country +"の首都名は次のうちどれでしょう？" +'<div class="progress_bar"></div>'
                 elem.style.display = "initial"
                 elem = document.getElementById("select1")
                 elem.style.display = "initial"
@@ -650,16 +818,9 @@ try{
         var delta = e.deltaY;
         if (delta < 0){
             // 拡大
-            // photo_scale_bigger();
-            const startTime = Date.now();
             photo_scale_change(1.2);
-            const endTime = Date.now();
-            var time=endTime-startTime;
-            console.log("拡大の処理時間： " + time +"msec");
-            // alert((endTime-startTime)/1000 +"Sec")
         }else{
             // 縮小
-            // photo_scale_smaller();
             photo_scale_change(0.80);
         }
     });
@@ -724,6 +885,10 @@ try{
     });
     // マウスポインタの位置
     document.addEventListener("mousemove", function(e){
+        if(link_to_page==true){
+            //マイページボタンクリック時に以下の処理を実行しないようにする
+            return
+        }
         mX = e.pageX;  //X座標
         mY = e.pageY;  //Y座標
         //座標を表示する
@@ -734,7 +899,7 @@ try{
             document.getElementById("vertical").style.display = 'none';
             document.getElementById("horizontal").style.display = 'none';
             elem = document.getElementById('select_image')
-            elem.src = "country_img/skelton.png";
+            elem.src = "/country_img/skelton.png";
             return
         }
         //縦線表示

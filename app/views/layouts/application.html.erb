@@ -4,12 +4,12 @@
     <title>World Geographic</title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
+    
     <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= stylesheet_pack_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    
+    <%= javascript_include_tag 'animsition.js' %> <!--webpacker経由で読み込むとエラーになるので、個別で指定読み込み-->
   </head>
 
   <body>
