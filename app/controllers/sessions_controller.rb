@@ -21,5 +21,6 @@ class SessionsController < ApplicationController
   def destroy
     log_out
     redirect_to login_path
+    puts "ログアウト通過したよ～"
   end
 end

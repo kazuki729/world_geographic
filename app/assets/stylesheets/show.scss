@@ -1,0 +1,135 @@
+
+.background{
+    position: absolute;
+    background-color: #2E4369;
+    width: 100%;
+    height: 100%;
+}
+.wrapper-show {
+    position: absolute;
+    width: 300px;
+    height: 100%;
+    overflow:auto;
+    z-index: 10;
+    border-right: 1px solid white;
+    color: white;
+    .header-show {
+        // background-color: rgba($color: darkgray, $alpha: 0.7);
+        border-bottom: 3px solid white;
+        height: 60px;
+        font-size: 0;
+        display: flex;
+        div{
+            flex-basis: 40px;
+            content: '';
+            width: 40px;
+            height: 40px;
+            margin-top: 10px;
+            margin-left: 5px;
+            background-image: url(icon_header_w.png);
+            background-size: cover;
+            display: inline-block;
+        }
+        p {
+            position: absolute;
+            top: 0;
+            left: 50px;
+            flex-basis: 200px;
+            font-size: 25px;
+            font-weight: bold;
+            line-height: 60px;
+            display: inline-block;
+            margin: 0px; //bootstrapで初期値が決められているため
+            color: white;
+        }
+    }
+    .menu-show{
+        text-align: center;
+        font-size: 25px;
+        border-bottom: 1px solid white;
+        margin: 0;
+    }
+    .link{
+        color: white;
+        font-size: 25px;
+    }
+    .name{
+        margin-left: 10px;
+        font-size: 25px;
+    }
+    .email{
+        margin-left: 20px;
+        font-size: 18px;
+    }
+    hr{
+        margin-bottom: 0;
+        border-color: white;
+    }
+    .caption{
+        width: 100%;
+        height: 20px;
+        font-size: 0;
+        display: table;
+        #game1, #game2{
+            display: inline-block;
+            width: 50%;
+            height: 20px;
+            text-align: center;
+            font-size: 14px;
+            vertical-align: center;
+            border-bottom: 1px solid white;
+            line-height: 20px;
+        }
+        #game1{
+            border-right: 1px solid white;
+        }
+    }
+    .summary{
+        width: 100%;
+        height: 50px;
+        font-size: 0;
+        display: table;
+        #total1, #total2{
+            display: inline-block;
+            width: 50%;
+            height: 50px;
+            text-align: center;
+            font-size: 25px;
+            vertical-align: center;
+            border-bottom: 1px solid white;
+            line-height: 50px;
+        }
+        #total1{
+            border-right: 1px solid white;
+        }
+    }
+    table {
+        margin: 10px 10px;
+        text-align: center;
+        th{
+            border-top: solid 1px white;
+            border-bottom: solid 1px white;
+            font-weight: lighter;
+            width: 80px;
+        }
+        td{
+            // border: solid 1px white;
+            font-weight: lighter;
+            width: 95px;
+        }
+    }
+}
+
+.right-space{
+    position: absolute;
+    top: 0;
+    left: 300px;
+    width: calc(100% - 300px);
+    height: 100%;
+    overflow:auto;
+    color: white;
+    h1{
+        margin: 20px 0;
+        text-align: center;
+    }
+}

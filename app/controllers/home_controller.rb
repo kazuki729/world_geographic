@@ -7,7 +7,7 @@ class HomeController < ApplicationController
   require 'objspace'
   require 'time'
 
-  $filepath = "public/country.txt"
+  $filepath = "public/country_img/country.txt"
 
   #DBに登録されているバイナリ画像をビューへ送信
   def image #==game1==
@@ -64,61 +64,101 @@ class HomeController < ApplicationController
     end
   end
   
-  # #リサイズメソッド
+  #ソートメソッド
   # def batch_skelton()
-  #   input_dir = "public/入力フォルダ/" #入力フォルダ
-  #   output_dir = "public/出力フォルダ/" #出力フォルダ
-  #   files = []
-  #   files = list_files(input_dir)
-  #   files.each do |fileName|
-  #     # img = Magick::ImageList.new("#{input_dir}#{fileName}")
-  #     img = Magick::Image.read("#{input_dir}#{fileName}").first
-  #     new_img = img.resize_to_fit(100, 9999)
-  #     new_img.write("#{output_dir}#{fileName}")
-  #     new_img.destroy!
+  #   data = []
+  #   File.open($filepath, mode = "rt"){|f|
+  #     f.each_line{|line|
+  #       data << line
+  #     }
+  #   }
+  #   temp = ""
+  #   for i in 0..data.length-1 do
+  #     for j in i+1..data.length-1 do
+  #       if(data[i].downcase > data[j].downcase)
+  #         temp = data[i]
+  #         data[i] = data[j]
+  #         data[j] = temp
+  #       end
+  #     end
+  #   end
+  #   File.open("public/country_new.txt", "w") do |f|
+  #     data.each do |line|
+  #       f.puts(line)
+  #       test = line.split("/")
+  #       puts "#{test[0]}"
+  #     end
   #   end
   #   redirect_to '/'
   # end
 
-  #画像透明化のバッチ処理アクション
-  def batch_skelton()
-    #================================================
-    # input_dir = "public/country_region/" #入力フォルダ
-    # output_dir = "public/skelton_image/" #出力フォルダ
-    input_dir = "public/入力フォルダ/" #入力フォルダ
-    output_dir = "public/出力フォルダ/" #出力フォルダ
-    #================================================
-    if params[:skelton]==nil
-      redirect_to '/'
-      return
+  #country.txtにinsert_strを追加書き込み
+  #country.txtはソート済み
+  #insert_strを正しい位置へ差し込む
+  def insert_data(insert_str)
+    origin_data = []
+    # country.txt読み込み
+    File.open($filepath, mode = "rt"){|f|
+      f.each_line{|line|
+      origin_data << line
+      }
+    }
+    #配列に挿入（ソートされた位置へ）
+    for i in 0..origin_data.length-1 do
+        if(origin_data[i].downcase > insert_str)
+          origin_data.insert(i, insert_str) #origin_dataのi番目とi+1番目の間に要素を挿入
+          break
+        end
     end
-    files = []
-    files = list_files(input_dir)
-    completed=0
-    start_time = Time.now
-    files.each do |filename|
-      puts "進行状況：#{completed}/#{files.length}(#{completed*100/files.length}%)"
-      img = Magick::Image.read("#{input_dir}/#{filename}").first
-      # skelton_image(img)
-      image_color_change(img)
-      img = img.matte_floodfill(0, 0)
-      img.write("#{output_dir}#{filename}")
-      img.destroy! # メモリ解放
-      completed += 1
+    #ファイル作成（上書き）
+    File.open($filepath, "w") do |f|
+      origin_data.each do |line|
+        f.puts(line)
+        test = line.split("/")
+        puts "#{test[0]}"
+      end
     end
-    sec = Time.now - start_time
-    day = sec.to_i / 86400
-    timer = (Time.parse("1/1") + (sec - day * 86400)).strftime("#{day}日%H時間%M分%S秒")
-    puts "進行状況：#{files.length}/#{files.length}(100%)"
-    puts "----------------------------------"
-    puts "バッチ処理完了"
-    puts "入力フォルダ：#{input_dir}"
-    puts "出力フォルダ：#{output_dir}"
-    puts "処理ファイル数：#{files.length}"
-    puts "処理時間：#{timer}"
-    puts "----------------------------------"
-    redirect_to '/'
   end
+
+  #画像透明化のバッチ処理アクション
+  # def batch_skelton()
+  #   #================================================
+  #   # input_dir = "public/country_region/" #入力フォルダ
+  #   # output_dir = "public/skelton_image/" #出力フォルダ
+  #   input_dir = "public/入力フォルダ/" #入力フォルダ
+  #   output_dir = "public/出力フォルダ/" #出力フォルダ
+  #   #================================================
+  #   if params[:skelton]==nil
+  #     redirect_to '/'
+  #     return
+  #   end
+  #   files = []
+  #   files = list_files(input_dir)
+  #   completed=0
+  #   start_time = Time.now
+  #   files.each do |filename|
+  #     puts "進行状況：#{completed}/#{files.length}(#{completed*100/files.length}%)"
+  #     img = Magick::Image.read("#{input_dir}/#{filename}").first
+  #     # skelton_image(img)
+  #     image_color_change(img)
+  #     img = img.matte_floodfill(0, 0)
+  #     img.write("#{output_dir}#{filename}")
+  #     img.destroy! # メモリ解放
+  #     completed += 1
+  #   end
+  #   sec = Time.now - start_time
+  #   day = sec.to_i / 86400
+  #   timer = (Time.parse("1/1") + (sec - day * 86400)).strftime("#{day}日%H時間%M分%S秒")
+  #   puts "進行状況：#{files.length}/#{files.length}(100%)"
+  #   puts "----------------------------------"
+  #   puts "バッチ処理完了"
+  #   puts "入力フォルダ：#{input_dir}"
+  #   puts "出力フォルダ：#{output_dir}"
+  #   puts "処理ファイル数：#{files.length}"
+  #   puts "処理時間：#{timer}"
+  #   puts "----------------------------------"
+  #   redirect_to '/'
+  # end
  
   #ディレクトリ以下のファイルを取得
   def list_files(dirpath)
@@ -169,12 +209,12 @@ class HomeController < ApplicationController
     @height = params[:height]
     @country = params[:country]
     @capital = params[:capital]
+    @region = params[:region]
     @register = true # ビューの登録モードON
-
-    #==================================
-    # img = Magick::ImageList.new('public/temp.jpg') # 画像読み込み
-    # img = img.quantize(256, Magick::RGBColorspace) # 処理時間長いからなし！！
+    
     img = Magick::Image.read('public/country_img/world_map.png').first
+    green_skelton = Magick::Image.read('public/country_img/skelton.png').first
+    blue_skelton = Magick::Image.read('public/country_img/skelton.png').first
     #---------------------------------------------------
     #ビューから座標を受け取る｛例｝x1,y1,x2,y2,x3,y3...
     array = params[:position].split(",")
@@ -186,41 +226,43 @@ class HomeController < ApplicationController
     end
     #---------------------------------------------------
     country_pos = []
-    # pix_check(x_pos, y_pos, img,country_pos) # 境界線で囲まれた領域を緑で塗る
-    pix_check(pos_arr, img,country_pos) # 境界線で囲まれた領域を緑で塗る
-    skelton_image(img)
-    img = img.matte_floodfill(0, 0)
-    # img = img.matte_floodfill(100, 100) # (100,100)のピクセルと同じ色は透明にする
-    img.write('public/テスト画像.png') # 画像保存
-    img.write("public/country_img/green/#{@country}.png") # 画像保存
-    image_color_change(img) #青色に変換
-    img = img.matte_floodfill(0, 0) #周りを透明化
-    img.write("public/country_img/blue/#{@country}.png") # 画像保存
-    File.open($filepath, "a") do |f|
-      f.puts(@country.to_s + "/" + @capital.to_s + "/" + country_pos.to_s)
-    end
+    pix_check(pos_arr, img,country_pos,green_skelton,blue_skelton) # 境界線で囲まれた領域を緑で塗る
+
+    img = img.matte_floodfill(664, 1053) #デバッグ
+    img = img.matte_floodfill(693, 1009) #デバッグ
+    img = img.matte_floodfill(686, 1058) #デバッグ
+    img.write("public/world.png") # デバッグ
+
+    puts "境界線で囲まれた領域を緑で塗る"
+    green_skelton.write("public/country_img/green/#{@country}.png") # 画像保存
+    puts "緑画像の背景透過・保存"
+    blue_skelton.write("public/country_img/blue/#{@country}.png") # 画像保存
+    puts "青画像の背景透過・保存"
+    insert_data(@country.to_s + "/" + @capital.to_s + "/" + @region.to_s + "/" + country_pos.to_s)
+    puts "国データテキストの保存"
     t=Time.new
     time_str = t.strftime("%Y-%m-%d %H:%M:%S") # 時間を文字列に変換
     File.open("public/history.txt", "a") do |f|
       f.puts(time_str + " " + @country.to_s + "を追加しました．")
     end
-    
+    puts "履歴ファイルの保存"
     #以下のコードはURLにパラメータが付加される．管理モード時しかこのアクションは使用しないため、問題ないはず．．．
     redirect_to :controller => 'home', :action => 'top', 
                                                          :top => params[:top], :left => params[:left], :width => params[:width], 
                                                          :height => params[:height], :country => params[:country], 
                                                          :capital => params[:capital], :register => @register
-    # redirect_to '/'
-    puts "-----------------INFO-----------------------------"
-    puts "画像サイズ：#{img.columns} x #{img.rows}"
-    puts "入力座標：#{pos_arr}"
-    puts "proccessアクション実行."
-    puts "--------------------------------------------------"
     img.destroy! # メモリ解放
+    green_skelton.destroy! # メモリ解放
+    blue_skelton.destroy! # メモリ解放
   end
   
   # 近傍画素チェック＆描画
-  def pix_check(array, img, country_pos)
+  def pix_check(array, img, country_pos,green_skelton,blue_skelton)
+    #==============================================
+    #img => 境界線情報が乗っている世界地図
+    #green_skelton => 透明なキャンバス.緑画像を作成用
+    #blue_skelton => 透明なキャンバス.青画像を作成用
+    #==============================================
     # array = [[col,row]] #2次元配列で定義
     temp=[] #あとで2次元配列で使う
     search_px = 0
@@ -239,6 +281,8 @@ class HomeController < ApplicationController
               && img.export_pixels(arr[0]-1,arr[1],1,1)[0].to_i != 43176 \
                     && img.export_pixels(arr[0]-1,arr[1],1,1)[1].to_i != 65535
             img.pixel_color(arr[0]-1,arr[1],Magick::Pixel.new(0,65535,0))
+            green_skelton.pixel_color(arr[0]-1,arr[1],Magick::Pixel.new(0,65535,0))
+            blue_skelton.pixel_color(arr[0]-1,arr[1],Magick::Pixel.new(0,0,65535))
             temp<<[arr[0]-1,arr[1]]
             puts "左"
           end
@@ -249,6 +293,8 @@ class HomeController < ApplicationController
               && img.export_pixels(arr[0],arr[1]-1,1,1)[0].to_i != 43176 \
                     && img.export_pixels(arr[0],arr[1]-1,1,1)[1].to_i != 65535
             img.pixel_color(arr[0],arr[1]-1,Magick::Pixel.new(0,65535,0))
+            green_skelton.pixel_color(arr[0],arr[1]-1,Magick::Pixel.new(0,65535,0))
+            blue_skelton.pixel_color(arr[0],arr[1]-1,Magick::Pixel.new(0,0,65535))
             temp<<[arr[0],arr[1]-1]
             puts "上"
           end
@@ -259,6 +305,8 @@ class HomeController < ApplicationController
               && img.export_pixels(arr[0]+1,arr[1],1,1)[0].to_i != 43176 \
                     && img.export_pixels(arr[0]+1,arr[1],1,1)[1].to_i != 65535
             img.pixel_color(arr[0]+1,arr[1],Magick::Pixel.new(0,65535,0))
+            green_skelton.pixel_color(arr[0]+1,arr[1],Magick::Pixel.new(0,65535,0))
+            blue_skelton.pixel_color(arr[0]+1,arr[1],Magick::Pixel.new(0,0,65535))
             temp<<[arr[0]+1,arr[1]]
             puts "右"
           end
@@ -269,6 +317,8 @@ class HomeController < ApplicationController
               && img.export_pixels(arr[0],arr[1]+1,1,1)[0].to_i != 43176 \
                     && img.export_pixels(arr[0],arr[1]+1,1,1)[1].to_i != 65535
             img.pixel_color(arr[0],arr[1]+1,Magick::Pixel.new(0,65535,0))
+            green_skelton.pixel_color(arr[0],arr[1]+1,Magick::Pixel.new(0,65535,0))
+            blue_skelton.pixel_color(arr[0],arr[1]+1,Magick::Pixel.new(0,0,65535))
             temp<<[arr[0],arr[1]+1]
             puts "下"
           end
@@ -326,7 +376,7 @@ class HomeController < ApplicationController
     # ビュー
     # redirect_to '/'
     #以下のコードはURLにパラメータが付加される．管理モード時しかこのアクションは使用しないため、問題ないはず．．．
-        redirect_to :controller => 'home', :action => 'top', :register => @register
+    redirect_to :controller => 'home', :action => 'top', :register => @register
   end
 
   #テスト

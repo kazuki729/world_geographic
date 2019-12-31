@@ -42,11 +42,13 @@
         <% if logged_in? %>
             <div style="font-size:0;"><!-- ログアウトの上に余白があるため -->
                 <%= link_to "マイページ", current_user, class: "side-menu", style: "border-top:1px solid white;", data: {"turbolinks" => false} %><br>
-                <%= link_to "ログアウト", logout_path, method: :delete, class: "side-menu" %>
+                <%#= link_to "ログアウト", logout_path, method: :delete, class: "side-menu" %>
+                <p class="side-menu" id="logout">ログアウト</p>
             </div>
         <% else %>
             <%= link_to "ログイン", login_path, class: "side-menu" , style: "border-top:1px solid white;" %>
         <% end %>
+        <img src="logout.gif" id="logout_gif" style="width:280px;height:157px;margin:5px;display:none;">
     </div>
     <!-- 管理モード -->
     <% if current_user.id == 1 %>
@@ -61,6 +63,17 @@
                 <br>
                 <p style="display: inline-block"">首都</p>
                 <input type="text" placeholder="capital name" id="capital" style="margin-left:5px;height:30px;">
+                <br>
+                <p style="display: inline-block"">地域</p>
+                <select id="region_menu" style="margin-left:5px;height:30px;font-size:12px;width:150px;">
+                    <option>選択してください</option>
+                    <option>Europe</option>
+                    <option>Asia</option>
+                    <option>Africa</option>
+                    <option>NorthAmerica</option>
+                    <option>SouthAmerica</option>
+                    <option>Oceania</option>
+                </select>
                 <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録モードを有効にしてください．</p>
                 <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※国名、首都名を入力してください．</p>
                 <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録国の場所を地図上で指定してください．</p>
@@ -73,9 +86,11 @@
                 <% else %>
                     <input type="button" class="btn btn-primary btn-sm" value="削除" id="delete" disabled="disabled" style="margin-left:5px; display:inline-block;">
                 <% end %>
-                <select name="delete_menu" id="delete_menu" style="margin-left:5px;height:30px;">
+                <select name="delete_menu" id="delete_menu" style="margin-left:5px;height:30px;width:260px;">
                     <option></option>
                 </select>
+                <p id="info_capital" style="margin-left:5px;margin-bottom:0;margin-top:3px;font-size:12px;">首都名：</p>
+                <p id="info_region" style="margin-left:5px;margin-bottom:0;margin-top:3px;font-size:12px;">地域：</p>
                 <p style="margin-bottom:0;margin-top:3px;font-size:12px;">※登録モードを有効にすると、実行できます．</p>
             </div>
             <p style="display:block; background-color: lightblue; text-align:center;border-bottom: 1px solid black;margin:0;">透明バッチ処理</p>
@@ -110,9 +125,9 @@
                 <br>
                 <span id="test">***</span>
             </div>
-        </div>
+        </div><!-- .adminの閉じタグ -->
     <!-- 管理モードここまで -->
-</div>
+</div><!-- .wrapperの閉じタグ -->
 
 <!-- 画像表示ゾーン -->
 <div class="display-space animsition" id="display-space"
@@ -150,12 +165,17 @@
         <div class="progress_bar"></div>
     </div>
     <div class="" id="question"></div>
-    <div class="balloon4" id="select1">選択１</div>
-    <div class="balloon4" id="select2">選択２</div>
-    <div class="balloon4" id="select3">選択３</div>
-    <div class="balloon4" id="select4">選択４</div>
-    <div class="droppin" id="droppin"></div>    
-</div>
+    <div class="balloon4 animsition" id="select1" data-animsition-in-class="fade-in-right"
+                                                  data-animsition-in-duration="1000">選択１</div>
+    <div class="balloon4 animsition" id="select2" data-animsition-in-class="fade-in-right"
+                                                  data-animsition-in-duration="1000">選択２</div>
+    <div class="balloon4 animsition" id="select3" data-animsition-in-class="fade-in-right"
+                                                  data-animsition-in-duration="1000">選択３</div>
+    <div class="balloon4 animsition" id="select4" data-animsition-in-class="fade-in-right"
+                                                  data-animsition-in-duration="1000">選択４</div>
+    <div class="droppin" id="droppin"></div> <!--ドロップピン-->
+    <div class="JudgeNotification">正解</div> <!--正解・不正解の通知-->
+</div><!--.display-spaceの閉じタグ-->
 <div class="full_image">
     <!-- 画面切り替え時などに画像を画面全体に表示する -->
     <h1 id="text-msg" class="animsition"
@@ -164,6 +184,9 @@
                       data-animsition-out-class="flip-out-x-fr"
                       data-animsition-out-duration="800">首都名を当てよう！</h1>
 </div>
+
+<!-- ajax通信時のCSRF対策 -->
+<%= hidden_field_tag "authenticity_token", form_authenticity_token %>
 
 <!-- 以下、javascript -->
 <script type="text/javascript">
@@ -200,6 +223,7 @@ try{
     var now_capital =""
     var country_list =[];
     var capital_list =[];
+    var region_list =[];
     var correct_option = 0; //現在出題されている問題の答え番号（１～４）
     var correct_country = 0;
     var game_number =1; //選択されているgame番号[1:game1 2:game2]
@@ -220,7 +244,7 @@ try{
     }
     // publicフォルダからの相対パスで指定
     var country_table = [];
-    readTextFile("country.txt")
+    readTextFile("country_img/country.txt")
     //MAP上にマウスがいる時
     $('#input-image').hover(function() {
         hoverFlag=true
@@ -264,7 +288,8 @@ try{
     //重複なし乱数生成(0~入力値-1までの範囲で3つ取り出す)
     function random(arr_length, answer_index){
         var arr = [...Array(arr_length).keys()]
-        arr.splice( answer_index, 1 ); //答えの配列番号は除外
+        // arr.splice( answer_index, 1 ); //答えの配列番号は除外
+        arr = same_region(arr,answer_index) //同じ地域を選択肢に仕込む
         var a = arr.length;
         var temp =[]
         while (a) { //答え以外でシャッフル
@@ -286,7 +311,19 @@ try{
         }
         return temp
     }
-    //--------------------------------------------------------------------
+
+    function same_region(arr,answer_index){
+        //配列の末尾から検索していく.
+        //答えとちがう地域は配列から削除.
+        var region_key = region_list[answer_index]
+        for(var i=arr.length-1; i>=0; i--){ //配列の末尾から
+            if(region_list[i]!=region_key || i==answer_index){
+                 //答えと違う地域or答えの場合（答えは後の処理で追加するため）
+                arr.splice( i, 1 ); //i番目の要素を削除
+            }
+        }
+        return arr
+    }
     function sort_data(table){
         // var country = str.split('/')
         var temp = ""
@@ -305,12 +342,15 @@ try{
     function display_list(){
         var target_items = '<select name="delete_menu" id="delete_menu">';
         var country_count = 0;
+        var count_region = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
         country_table.forEach(function( str ) {
             var country = str.split('/');
             if(country[0] != ""){ //空白は表示しない（ファイルの最終行に改行があるため）
                 target_items = target_items + '<option value="' + country[0] + '">'+country[0]+'</option>';
                 country_list.push(country[0])
                 capital_list.push(country[1])
+                region_list.push(country[2])
+                count_region=region_count(count_region,country[2]) //地域毎の集計
                 country_count++;
                 // デバッグ用
                 var x = "<%= @country %>";
@@ -323,10 +363,45 @@ try{
         target_items = target_items + '</select>';
         elem = document.getElementById('delete_menu')
         elem.innerHTML = target_items
+        elem = document.getElementById("info_capital")
+        elem.innerHTML = "首都名："+capital_list[0]
+        elem = document.getElementById("info_region")
+        elem.innerHTML = "地域："+region_list[0]
         elem_count = document.getElementById('country_count')
-        elem_count.innerHTML = '<span id="country_count">データ登録数：'+ country_count +'カ国</span>'
+        elem_count.innerHTML = '<span id="country_count">データ登録数：'+ country_count +'カ国</span>'+'<br>'
+        elem_count.innerHTML += '<table border="1" style="border:1px solid white; width:250px;margin-left:5px;">' +
+                                    '<tr><td>Europe</td><td style="text-align:center;">'+count_region["Europe"]+'</td></tr>' +
+                                    '<tr><td>Asia</td><td style="text-align:center;">'+count_region["Asia"]+'</td></tr>' +
+                                    '<tr><td>Africa</td><td style="text-align:center;">'+count_region["Africa"]+'</td></tr>' +
+                                    '<tr><td>Oceania</td><td style="text-align:center;">'+count_region["Oceania"]+'</td></tr>' +
+                                    '<tr><td>NorthAmerica</td><td style="text-align:center;">'+count_region["NorthAmerica"]+'</td></tr>' +
+                                    '<tr><td>SouthAmerica</td><td style="text-align:center;">'+count_region["SouthAmerica"]+'</td></tr>' +
+                                '</table>'
     }
-
+    //地域毎の集計[arr:集計用の配列]
+    function region_count(arr,region_key){
+        switch(region_key){
+            case "Europe":
+                arr["Europe"]++;
+                break;
+            case "Asia":
+                arr["Asia"]++;
+                break;
+            case "Africa":
+                arr["Africa"]++;
+                break;
+            case "Oceania":
+                arr["Oceania"]++;
+                break;
+            case "NorthAmerica":
+                arr["NorthAmerica"]++;
+                break;
+            case "SouthAmerica":
+                arr["SouthAmerica"]++;
+                break;
+        }
+        return arr
+    }
     //クリア国を一時的に表示（DB登録と画像合成完了するまで必要なため）
     function completed_country_display(clear_country) {
         var str = '<img src="country_img/green/'+clear_country+'.png" class="input-image">'
@@ -408,10 +483,8 @@ try{
                     allText = rawFile.responseText;
                     country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
                     country_table = country_table.filter(Boolean); //空白除去
-                    if("<%= current_user.id %>" == '1'){
-                        //sort_dataは処理時間がかかるので、管理モード時のみ実施
-                        country_table = sort_data(country_table)
-                    }
+                    //sort_dataは処理時間がかかるので、データ作成時にcontrollerでソート
+                    // country_table = sort_data(country_table)
                     display_list() // ドロップダウンに国をリストする
                     cashe() // ブルー画像をキャッシュ
                 }
@@ -456,6 +529,37 @@ try{
             skelton_btn.disabled = true;
         }
     };
+    document.getElementById("logout").onclick = function (event) {
+        $("#logout_gif").css({ //アニメーションスタート
+            display:'initial',
+        });
+        var id = setInterval(function(){
+            clearInterval(id);
+            logout();
+        }, 3000);//３秒後にログアウト
+    };
+
+    function logout(){
+        //ログアウトアクション
+        $.ajax({
+            type:'DELETE',
+            url: '<%= logout_path %>',
+            data: {"authenticity_token": $("#authenticity_token").val()}
+        })
+        .done(function(){
+        })
+        .fail(function(){
+            console.log('ログアウト失敗')
+        })
+    };
+
+    document.getElementById( 'delete_menu' ).onchange = function(){
+        // 選択されているoption要素を取得する
+        var selectedItem = $('#delete_menu option:selected').text();
+        var i = country_list.indexOf(selectedItem);
+        document.getElementById("info_capital").innerHTML = "首都名：" + capital_list[i];
+        document.getElementById("info_region").innerHTML = "国名：" + region_list[i];
+    }
     document.getElementById("Europe").onclick = function (event) {
         choose_region(306,838,3.0) //アフリカの中心座標は(375,1400)
     };
@@ -571,10 +675,15 @@ try{
             elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
             baloon_hide('none')
             $("#droppin").css({"display": 'none',});
-            progress(10000)
-            // alert("正解")
+            judge('initial','正解');
+            progress(1000)
         }else{
-            // alert("残念")
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='残念！！'+'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            judge('initial','残念');
+            progress(1000)
         }
     }
     document.getElementById("select2").onclick = function (event) {
@@ -591,10 +700,15 @@ try{
             elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
             baloon_hide('none')
             $("#droppin").css({"display": 'none',});
-            progress(10000)
-            // alert("正解")
+            judge('initial','正解');
+            progress(1000)
         }else{
-            // alert("残念")
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='残念！！'+'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            judge('initial','残念');
+            progress(1000)
         }
     }
     document.getElementById("select3").onclick = function (event) {
@@ -611,10 +725,15 @@ try{
             elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
             baloon_hide('none')
             $("#droppin").css({"display": 'none',});
-            progress(10000)
-            // alert("正解")
+            judge('initial','正解');
+            progress(1000)
         }else{
-            // alert("残念")
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='残念！！'+'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            judge('initial','残念');
+            progress(1000)
         }
     }
     document.getElementById("select4").onclick = function (event) {
@@ -631,11 +750,24 @@ try{
             elem.innerHTML='正解：'+correct_country +'<div class="progress_bar"></div>'
             baloon_hide('none')
             $("#droppin").css({"display": 'none',});
-            progress(10000)
-            // alert("正解")
+            judge('initial','正解');
+            progress(1000)
         }else{
-            // alert("残念")
+            elem = document.getElementById('answer_window')
+            elem.innerHTML='残念！！'+'<div class="progress_bar"></div>'
+            baloon_hide('none')
+            $("#droppin").css({"display": 'none',});
+            judge('initial','残念');
+            progress(1000)
         }
+    }
+
+    //判定ラベルの表示・非表示(display):'initial' or 'none', text: '正解' or '残念')
+    function judge(display,text){
+        $(".JudgeNotification").css({
+            "display": display,
+        });
+        $(".JudgeNotification").text(text)
     }
     //指定msec後にプログレスバーとウィンドウを非表示
     function progress(hide_msec){
@@ -651,6 +783,7 @@ try{
             $(".progress_bar").css({
                 display: 'none',
             });
+            judge('none','残念');
             elem = document.getElementById('answer_window')
             elem.innerHTML='世界地図をクリックして、問題に回答しよう<div class="progress_bar"></div>'
             index=0;
@@ -736,8 +869,9 @@ try{
         const mode = document.getElementsByName("mode");
         var country_name = document.getElementById("country").value;
         var capital_name = document.getElementById("capital").value;
+        var region_name = document.getElementById("region_menu").value;
         if(mode[0].checked){
-            if(country_name != "" && capital_name != ""){
+            if(country_name != "" && capital_name != "" && region_name != "選択してください"){
                 dummy_data += "["+ Math.round(Org_mouse_x) + ',' + Math.round(Org_mouse_y) +"]" 
                 var result = window.confirm('国を登録しますか？\n※'+ region_index +'つ目の領域を選択する場合はキャンセル\n選択中の座標：'+dummy_data);
                 if(result) {
@@ -751,14 +885,25 @@ try{
                     region_index++
                 }
             }else{
-                alert("国名、首都名を入力してください")
+                alert("国名、首都名、地域を入力してください")
             }
         }else{
             if(now_country==""){
                 return
             }
             // alert("管理モードがONになっていません！")
-            var elem = document.getElementById("droppin")
+            if(menu_open_flg){
+                //閉じる処理
+                $(".wrapper").css({
+                    "display": "none",
+                });
+                $(".menu_icon").css({
+                    "left": "30px",
+                    "background-image": "url(icon_header.png)",
+                });
+            }
+            menu_open_flg=false
+            var elem = document.getElementById("droppin") //フラッグピンをプロット
             elem.style.left = mX - 10 + "px";
             elem.style.top = mY - 50 + "px";
             elem.style.display = 'initial';
@@ -787,6 +932,7 @@ try{
                 var cards = [num1,num2,num3,num4];
                 correct_option = cards.indexOf(answer) + 1; //正解番号を記憶
                 correct_country = now_country;
+                $('.balloon4').animsition('in'); //アニメーション発火
             }else if(game_number==2){
                 var elem = document.getElementById("answer_window")
                 elem.innerHTML = ""+ now_country +"の首都名は次のうちどれでしょう？" +'<div class="progress_bar"></div>'
@@ -1098,6 +1244,13 @@ try{
         request7.name = 'capital';
         request7.value =document.getElementById("capital").value;
         form.appendChild(request7);
+
+        var request8 = document.createElement('input');
+        request8.type = 'hidden'; //入力フォームが表示されないように
+        request8.name = 'region';
+        var selected_region = $('#region_menu option:selected').text();
+        request8.value = selected_region;
+        form.appendChild(request8);
 
         document.body.appendChild(form);
         dispLoading("サーバーアクセス中．．．")

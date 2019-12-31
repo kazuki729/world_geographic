@@ -1,16 +1,263 @@
-<% provide(:title, @user.name) %>
-  <div class="row">
-    <aside class="col-md-4">
-      <section class="user_info">
-        <h1>
-          <%= gravatar_for @user %>
-          <%= @user.name %>
-        </h1>
-      </section>
-    </aside>
+<div class="background">
+  <div class="wrapper-show"><!-- 画面左側スペース -->
+    <div class="header-show">
+        <div></div>
+        <p>WorldGeographic</p>
+    </div>
+    <p class="menu-show">ユーザー情報</p>
+    <p class="name"><%= @user.name %></p>
+    <p class="email"><%= @user.email %></p>
+    <hr>
+    <p class="menu-show">クリア状況</p>
+    <div class="caption">
+      <div id="game1">国当て</div>
+      <div id="game2">首都当て</div>
+    </div>
+    <div class="summary">
+      <div id="total1">--</div><!-- 60カ国 -->
+      <div id="total2">--</div><!-- 90カ国 -->
+    </div>
+    <table> <!-- 表 -->
+      <tr><td>地域別</td><td>国</td><td>首都</td></tr>
+      <tr><th>ヨーロッパ</th><th id="A1">--</th><th id="A2">--</th></tr>
+      <tr><th>アジア</th><th id="B1">--</th><th id="B2">--</th></tr>
+      <tr><th>アフリカ</th><th id="C1">--</th><th id="C2">--</th></tr>
+      <tr><th>北アメリカ</th><th id="D1">--</th><th id="D2">--</th></tr>
+      <tr><th>南アメリカ</th><th id="E1">--</th><th id="E2">--</th></tr>
+      <tr><th>オセアニア</th><th id="F1">--</th><th id="F2">--</th></tr>
+    </table>
+    <hr>
+    <%= link_to "メイン画面", '/', class: "link", data: {"turbolinks" => false} %>
   </div>
 
-<div class="animsition">
-  <a href="https://www.google.com/" class="animsition-link">animsition link 1</a> 
-  <a href="https://www.google.com/" class="animsition-link">animsition link 2</a>
+  <div class="right-space"><!-- 画面右側のスペース -->
+    <h1>国名一覧</h1>
+    <div class="container">
+      <div class="row text-center mt-5">
+        <div class="col-3" id="column1">
+        </div>
+        <div class="col-3" id="column2">
+        </div>
+        <div class="col-3" id="column3">
+        </div>
+        <div class="col-3" id="column4">
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<script>
+  var country_table = []; //japan/tokyo/Asia/[座標]
+  var country_list=[]; //japan
+  var capital_list=[]; //tokyo
+  var region_list=[]; //Asia
+  var country_region = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての国名を格納する
+  var capital_region = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての首都名を格納する
+  var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
+  var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
+  
+  if(clear_game1 ==""){
+      clear_game1=[]
+  }else{
+      clear_game1 = clear_game1.split(',');
+  }
+  if(clear_game2==""){
+      clear_game2=[]
+  }else{
+      clear_game2 = clear_game2.split(',');
+  }
+
+  readTextFile("/country_img/country.txt")
+  
+  function readTextFile(file){
+        var rawFile = new XMLHttpRequest();
+        var allText = "";
+        rawFile.open("GET", file, true);
+        //以下３行はキャッシュから取得しない設定
+        rawFile.setRequestHeader('Pragma', 'no-cache');
+        rawFile.setRequestHeader('Cache-Control', 'no-cache');
+        rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+
+        rawFile.onreadystatechange = function (){
+            // dispLoading("データ取得中．．．")
+            if(rawFile.readyState === 4){
+                if(rawFile.status === 200 || rawFile.status == 0){
+                    allText = rawFile.responseText;
+                    country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
+                    country_table = country_table.filter(Boolean); //空白除去
+                    read_country_info()
+                    display_list('column1')
+                    display_list('column2')
+                    display_list('column3')
+                    display_list('column4')
+                    clear_summary1()
+                    clear_summary2()
+                }else{
+                    allText="失敗"
+                    alert("データ取得失敗")
+                }
+            }
+        }
+        rawFile.send(null);
+    }
+
+    function read_country_info(){
+      country_table.forEach(function( str ) {
+        var country = str.split('/');
+        if(country[0] != ""){ //空白は表示しない（ファイルの最終行に改行があるため）
+          country_list.push(country[0])
+          capital_list.push(country[1])
+          region_list.push(country[2])
+          region_summary(country_region,capital_region,country[0],country[1],country[2])
+        }
+      });
+    }
+
+    function region_summary(country_region,capital_region,country,capital,region_key){
+        switch(region_key){
+            case "Europe":
+                country_region["Europe"].push(country)
+                capital_region["Europe"].push(capital)
+                break;
+            case "Asia":
+                country_region["Asia"].push(country)
+                capital_region["Asia"].push(capital)
+                break;
+            case "Africa":
+                country_region["Africa"].push(country)
+                capital_region["Africa"].push(capital)
+                break;
+            case "Oceania":
+                country_region["Oceania"].push(country)
+                capital_region["Oceania"].push(capital)
+                break;
+            case "NorthAmerica":
+                country_region["NorthAmerica"].push(country)
+                capital_region["NorthAmerica"].push(capital)
+                break;
+            case "SouthAmerica":
+                country_region["SouthAmerica"].push(country)
+                capital_region["SouthAmerica"].push(capital)
+                break;
+        }
+    }
+
+    function display_list(column){
+        var element = "";
+        var html_source = '';
+        switch(column){
+            case "column1":
+                html_source = '<h4>Europe</h4><hr style="border-color:white;"><p>'
+                element = document.getElementById("column1");
+                var Len = country_region["Europe"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["Europe"][i] + '<br><span style="color:gray;">(' + capital_region["Europe"][i] + ')</span></p><p>';
+                };
+                break;
+            case "column2":
+              html_source = '<h4>Asia</h4><hr style="border-color:white;"><p>'
+                element = document.getElementById("column2");
+                var Len = country_region["Asia"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["Asia"][i] + '<br><span style="color:gray;">(' + capital_region["Asia"][i] + ')</span></p><p>';
+                };
+                break;
+            case "column3":
+                html_source = '<h4>Africa</h4><hr style="border-color:white;"><p>'
+                element = document.getElementById("column3");
+                var Len = country_region["Africa"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["Africa"][i] + '<br><span style="color:gray;">(' + capital_region["Africa"][i] + ')</span></p><p>';
+                };
+                break;
+            case "column4":
+                html_source = '<h4>NorthAmerica</h4><hr style="border-color:white;"><p>'
+                element = document.getElementById("column4");
+                var Len = country_region["NorthAmerica"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["NorthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region["NorthAmerica"][i] + ')</span></p><p>';
+                };
+                html_source += '</p><h4>SouthAmerica</h4><hr style="border-color:white;"><p>'
+                Len = country_region["SouthAmerica"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["SouthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region["SouthAmerica"][i] + ')</span></p><p>';
+                };
+                html_source += '</p><h4>Oceania</h4><hr style="border-color:white;"><p>'
+                Len = country_region["Oceania"].length-1;
+                for(var i=0; i<=Len; i++){
+                  html_source += country_region["Oceania"][i] + '<br><span style="color:gray;">(' + capital_region["Oceania"][i] + ')</span></p><p>';
+                };
+                break;
+        }
+        element.innerHTML = html_source;
+    }
+    function clear_summary1(){
+      var Len = clear_game1.length-1
+      var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
+      for(var i=0; i<=Len; i++){
+        var index = country_list.indexOf(clear_game1[i])
+        switch(region_list[index]){
+            case "Europe":
+                count["Europe"]++;
+                break;
+            case "Asia":
+                count["Asia"]++;
+                break;
+            case "Africa":
+                count["Africa"]++;
+                break;
+            case "Oceania":
+                count["Oceania"]++;
+                break;
+            case "NorthAmerica":
+                count["NorthAmerica"]++;
+                break;
+            case "SouthAmerica":
+                count["SouthAmerica"]++;
+                break;
+        }
+      };
+      document.getElementById("total1").innerHTML = clear_game1.length + 'カ国'
+      document.getElementById("A1").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
+      document.getElementById("B1").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
+      document.getElementById("C1").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
+      document.getElementById("D1").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
+      document.getElementById("E1").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
+      document.getElementById("F1").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+    }
+    function clear_summary2(){
+      var Len = clear_game2.length-1
+      var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
+      for(var i=0; i<=Len; i++){
+        var index = country_list.indexOf(clear_game2[i])
+        switch(region_list[index]){
+            case "Europe":
+                count["Europe"]++;
+                break;
+            case "Asia":
+                count["Asia"]++;
+                break;
+            case "Africa":
+                count["Africa"]++;
+                break;
+            case "Oceania":
+                count["Oceania"]++;
+                break;
+            case "NorthAmerica":
+                count["NorthAmerica"]++;
+                break;
+            case "SouthAmerica":
+                count["SouthAmerica"]++;
+                break;
+        }
+      };
+      document.getElementById("total2").innerHTML = clear_game2.length + 'カ国';
+      document.getElementById("A2").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
+      document.getElementById("B2").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
+      document.getElementById("C2").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
+      document.getElementById("D2").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
+      document.getElementById("E2").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
+      document.getElementById("F2").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+    }
+</script>
