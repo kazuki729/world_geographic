@@ -1,0 +1,14 @@
+class_name,English,Japanese
+.lang0,Question form,問題形式
+.lang1,country,場所➡国名
+.lang2,capital,国名➡首都
+.lang3,ZOOM REGION,地域別
+.lang4,Europe,ヨーロッパ
+.lang5,Asia,アジア
+.lang6,Africa,アフリカ
+.lang7,Oceania,オセアニア
+.lang8,N-America,北アメリカ
+.lang9,S-America,南アメリカ
+.lang10,PROFILE,プロフィール
+.lang11,LOGOUT,ログアウト
+.lang12,Let's answer the question!Click the country!,世界地図をクリックして、問題に回答しよう

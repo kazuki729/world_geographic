@@ -9,7 +9,7 @@ class HomeController < ApplicationController
 
   $filepath = "public/country_img/country.txt"
 
-  #DBに登録されているバイナリ画像をビューへ送信
+  #DBに登録されているバイナリ画像をビューへ送信（クリア状況画像）
   def image #==game1==
     game = Game.find_by(user_id: current_user.id)
     if game == nil
@@ -47,18 +47,22 @@ class HomeController < ApplicationController
     @capital = params[:capital] #管理モードからデータを変更した際の該当首都
     @ClearGame1 = "" #game1のクリア国を格納(場所➡国名)
     @ClearGame2 = "" #game2のクリア国を格納(国名➡首都)
+    @language =""
 
     #Gameテーブルからログインユーザーのクリア状況を取得
     if logged_in?
       game = Game.find_by(user_id: current_user.id)
-      puts "ログインユーザーだから、DB問い合わせ！！user_id:#{current_user.id} game:#{game}"
+      user = User.find_by(id: current_user.id)
       if game!=nil #データがあるなら値をセット
         puts "値取得開始"
         @ClearGame1 = game.country
         @ClearGame2 = game.capital
-        puts "値ゲット：game1=>#{@ClearGame1} game2:=>#{@ClearGame2}"
       end
-      puts "ログインユーザーだから、ゲーム画面へ！！user_id:#{current_user.id}"
+      if user.language!=nil
+        @language = user.language
+      else
+        @language = "English"
+      end
     else
       redirect_to login_path
     end
@@ -66,30 +70,30 @@ class HomeController < ApplicationController
   
   #ソートメソッド
   # def batch_skelton()
-  #   data = []
-  #   File.open($filepath, mode = "rt"){|f|
-  #     f.each_line{|line|
-  #       data << line
-  #     }
-  #   }
-  #   temp = ""
-  #   for i in 0..data.length-1 do
-  #     for j in i+1..data.length-1 do
-  #       if(data[i].downcase > data[j].downcase)
-  #         temp = data[i]
-  #         data[i] = data[j]
-  #         data[j] = temp
-  #       end
-  #     end
-  #   end
-  #   File.open("public/country_new.txt", "w") do |f|
-  #     data.each do |line|
-  #       f.puts(line)
-  #       test = line.split("/")
-  #       puts "#{test[0]}"
-  #     end
-  #   end
-  #   redirect_to '/'
+    # data = []
+    # File.open($filepath, mode = "rt"){|f|
+    #   f.each_line{|line|
+    #     data << line
+    #   }
+    # }
+    # temp = ""
+    # for i in 0..data.length-1 do
+    #   for j in i+1..data.length-1 do
+    #     if(data[i].downcase > data[j].downcase)
+    #       temp = data[i]
+    #       data[i] = data[j]
+    #       data[j] = temp
+    #     end
+    #   end
+    # end
+    # File.open("public/country_new.txt", "w") do |f|
+    #   data.each do |line|
+    #     info = line.split("/")
+    #     f.puts("#{info[0]}<#><#><#><#><#><#><#><#><#><#><#>")
+    #     # puts "#{info[0]},#{info[1]},"
+    #   end
+    # end
+    # redirect_to '/'
   # end
 
   #country.txtにinsert_strを追加書き込み
@@ -119,6 +123,32 @@ class HomeController < ApplicationController
       end
     end
   end
+  # 背景透過PNG
+  # def batch_skelton()
+  #   #================================================
+  #   input_dir = "public/入力フォルダ/" #入力フォルダ
+  #   output_dir = "public/出力フォルダ/" #出力フォルダ
+  #   #================================================
+  #   if params[:skelton]==nil
+  #     puts "リターン"
+  #     redirect_to '/'
+  #     return
+  #   end
+  #   files = []
+  #   files = list_files(input_dir)
+  #   puts files.length
+  #   completed=0
+  #   files.each do |filename|
+  #     puts "進行状況：#{completed}/#{files.length}(#{completed*100/files.length}%)"
+  #     img = Magick::Image.read("#{input_dir}/#{filename}").first
+  #     img = img.matte_floodfill(0, 0)
+  #     img.write("#{output_dir}#{filename}.png")
+  #     img.destroy! # メモリ解放
+  #     completed+=1
+  #   end
+
+  #   redirect_to '/'
+  # end
 
   #画像透明化のバッチ処理アクション
   # def batch_skelton()
@@ -228,10 +258,10 @@ class HomeController < ApplicationController
     country_pos = []
     pix_check(pos_arr, img,country_pos,green_skelton,blue_skelton) # 境界線で囲まれた領域を緑で塗る
 
-    img = img.matte_floodfill(664, 1053) #デバッグ
-    img = img.matte_floodfill(693, 1009) #デバッグ
-    img = img.matte_floodfill(686, 1058) #デバッグ
-    img.write("public/world.png") # デバッグ
+    # img = img.matte_floodfill(664, 1053) #デバッグ
+    # img = img.matte_floodfill(693, 1009) #デバッグ
+    # img = img.matte_floodfill(686, 1058) #デバッグ
+    # img.write("public/world.png") # デバッグ
 
     puts "境界線で囲まれた領域を緑で塗る"
     green_skelton.write("public/country_img/green/#{@country}.png") # 画像保存
@@ -461,5 +491,141 @@ class HomeController < ApplicationController
     imageListFrame.destroy!
     imageList.destroy!
     puts "メモリ解放完了！merge_2"
+  end
+
+  # Gameクリア情報をリセット
+  def RemoveDB
+    if logged_in?
+      game = Game.find_by(user_id: current_user.id) #ログインユーザーのレコードがGAMEテーブルにあるか．
+      if game.present?
+        game.destroy
+        puts "DBリセット.id:#{current_user.id}:current_user.name"
+      end
+    end
+  end
+
+  # 画像をDBに登録
+  def PostPhoto
+    puts "=================="
+    file = params[:fileupload][:file]
+    # File.binwrite("public/dummy.jpg", file.read)
+    user = User.find_by(id: current_user.id)
+    bin = file.read
+    user.photo = bin
+    if user.save!
+      puts "成功"
+    else
+      puts "失敗"
+    end
+  end
+
+  #言語変更をDBに登録
+  def ChangeLanguage
+    puts "ChangeLanguage実行"
+    language = params[:language]
+    # File.binwrite("public/dummy.jpg", file.read)
+    user = User.find_by(id: current_user.id)
+    if user.update(language: language)
+      puts "成功"
+    else
+      puts "失敗"
+    end
+  end
+    
+  #ユーザー毎に登録されている壁紙画像をビューへ送信
+  def wallpaper
+    puts "wallpaper取得開始"
+    user = User.find_by(id: current_user.id)
+    if user == nil
+      img = Magick::ImageList.new("public/universe.jpg")
+      send_data img.to_blob, type: 'image/jpeg', disposition: 'inline'
+      return
+    end
+    if user.photo != nil
+        send_data user.photo, type: 'image/jpeg', disposition: 'inline'
+    else
+      img = Magick::ImageList.new("public/universe.jpg")
+      send_data img.to_blob, type: 'image/jpeg', disposition: 'inline'
+    end
+    puts "wallpaper送信"
+  end
+
+  #国情報をアップデート(country_info.txt)
+  def UpdateCountryInfo
+    puts "コントローラ到着"
+    country_ja=params[:country_ja] #国名（日本語）
+    country_en=params[:country_en] #国名（英語）
+    capital_ja=params[:capital_ja] #首都（日本語）
+    capital_en=params[:capital_en] #首都（英語）
+
+    ofic_lang_ja=params[:ofic_lang_ja] #公用語（日本語）
+    ofic_lang_en=params[:ofic_lang_en] #公用語（英語）
+    population=params[:population] #人口
+    area=params[:area] #面積
+
+    wiki_ja=params[:wiki_ja] #wiki url（日本語）
+    wiki_en=params[:wiki_en] #wiki url（英語）
+    photo_ja=params[:photo_ja] #画像タイトル（日本語）
+    photo_en=params[:photo_en] #画像タイトル（英語）
+    description_ja=params[:description_ja] #国名（日本語）
+    description_en=params[:description_en] #国名（英語）
+    fileupload=params[:fileupload] #画像
+    puts country_ja
+    puts country_en
+    puts capital_ja
+    puts capital_en
+
+    puts ofic_lang_ja
+    puts ofic_lang_en
+    puts population
+    puts area
+    puts wiki_ja
+    puts wiki_en
+    puts photo_ja
+    puts photo_en
+    puts description_ja
+    puts description_en
+        
+    write_text(country_ja,country_en,capital_ja,capital_en,ofic_lang_ja,ofic_lang_en,population,area,wiki_ja,wiki_en,photo_ja,photo_en,description_ja,description_en)
+    
+    if fileupload!=nil #画像の保存
+      File.binwrite("public/country_img/picture/#{country_en}-1.jpg", fileupload.read)
+    end
+
+    # puts fileupload.original_filename 
+  end
+  
+  #国情報を書き換える
+  def write_text(country_ja,country_en,capital_ja,capital_en,ofic_lang_ja,ofic_lang_en,population,area,wiki_ja,wiki_en,photo_ja,photo_en,description_ja,description_en)
+    origin_data = []
+    # country.txt読み込み
+    File.open("public/country_img/country_info.txt", mode = "rt"){|f|
+      f.each_line{|line|
+      origin_data << line
+      }
+    }
+    #ファイル作成（上書き）
+    File.open("public/country_img/country_info.txt", "w") do |f|
+      new_line = ""
+      counter = 0
+      origin_data.each do |line|
+        item = line.split("<#>")
+        if item[0]==country_en
+          # puts "チェック1()if:#{item[0]}===#{country_en}"
+          new_line = country_en
+          new_line += "<#>" + ofic_lang_ja + "<#>" + ofic_lang_en
+          new_line += "<#>" + population + "<#>" + area
+          new_line += "<#>" + wiki_ja + "<#>" + wiki_en
+          new_line += "<#>" + description_ja + "<#>" + description_en
+          new_line += "<#>" + photo_ja + "<#>" + photo_en
+          # puts "=>>>>>>>#{new_line}"
+          f.puts(new_line)
+        else
+          f.puts(line)
+          counter += 1
+        end #ifの閉じ
+      end #eachの閉じ
+      puts "チェック2（else）:#{counter}回"
+    end #File.openの閉じ
   end
 end

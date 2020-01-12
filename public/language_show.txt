@@ -1,0 +1,23 @@
+class_name,English,Japanese
+.lang0,User Info,ユーザー情報
+.lang1,Clear Status,クリア状況
+.lang2,Country,国当て
+.lang3,Capital,首都当て
+.lang4,Region,地域別
+.lang5,Country,国
+.lang6,Capital,首都
+.lang7,Europe,ヨーロッパ
+.lang8,Asia,アジア
+.lang9,Africa,アフリカ
+.lang10,N-America,北アメリカ
+.lang11,S-America,南アメリカ
+.lang12,Oceania,オセアニア
+.lang13,Countries List,国名一覧
+
+.lang14,Setting,設定
+.lang15,Change a wallpaer of top,ゲーム画面の壁紙変更
+.lang16,Change,変更
+.lang17,Reset of game data,ゲーム情報のクリア
+.lang18,Reset,実行
+.lang19,Language,表示言語
+.lang20,Close,閉じる

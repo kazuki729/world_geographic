@@ -1,0 +1,164 @@
+afghanistan/kabul/アフガニスタン/カブール
+albania/tirana/アルバニア/ティラナ
+algeria/algiers/アルジェリア/アルジェ
+angola/luanda/アンゴラ/ルアンダ
+argentina/buenos aires/アルゼンチン/ブエノスアイレス
+armenia/yarevan/アルメニア/エレバン
+australia/canberra/オーストラリア/キャンベラ
+austria/vienna/オーストリア/ウィーン
+azerbaijan/baku/アゼルバイジャン/バクー
+bangladesh/dhaka/バングラデッシュ/ダッカ
+belarus/minsk/ベラルーシ/ミンスク
+belgium/brussels/ベルギー/ブリュッセル
+belize/belmopan/ベリーズ/ベルモパン
+benin/porto-novo/ベニン共和国/ベニンシティ
+bhutan/thimphu/ブータン/ティンプー
+bolivia/sucre/ボリビア/スクレ
+bosnia and herzegovina/sarajevo/ボスニアヘルツェコビナ/サラエボ
+botswana/gaborone/ボツワナ/ハボローネ
+brazil/brazilia/ブラジル/ブラジリア
+brunei/bandar seri begawan/ブルネイ・ダルサラーム/バンダルスリブガワン
+bulgaria/sofia/ブルガリア/ソフィア
+burkina faso/ouagadougou/ブルキナファソ/ワガドゥグー
+burundi/gitega/ブルンジ/ギテガ
+cambodia/phnom penh/カンボジア/プノンペン
+cameroon/yaounde/カメルーン/ヤウンデ
+canada/ottawa/カナダ/オタワ
+central african republic/bangui/中央アフリカ共和国/バンギ
+chad/n'djamena/チャド共和国/ンジャメナ
+chile/santiago/チリ/サンティアゴ
+china/beijing/中国/北京
+columbia/bogota/コロンビア/ボゴタ
+costa rica/san jose/コスタリカ/サンホセ
+cote d'lvoire/yamoussoukro/コートジボワール/ヤムスクロ
+croatia/zagreb/クロアチア/ザグレブ
+cuba/havana/キューバ/ハバナ
+cyprus/nicosia/キプロス/ニコシア
+czechia/prague/チェコ/プラハ
+democratic republic of the congo/kinshasa/コンゴ民主共和国/キンシャサ
+djibouti/djibouti/ジブチ共和国/ジブチ
+dominican republic/santo domingo/ドミニカ共和国/サントドミンゴ
+ecuador/quito/エクアドル/キト
+egypt/cairo/エジプト/カイロ
+el salvador/san salvador/エルサルバトル/サンサルバトル
+equatorial guinea/malabo/赤道ギニア共和国/マラボ
+eritrea/asmara/エリトリア/アスマラ
+estonia/tallinn/エストニア/タリン
+ethiopia/addis ababa/エチオピア/アディスアベバ
+fiji/suva/フィジー/スバ
+finland/helsinki/フィンランド/ヘルシンキ
+france/paris/フランス/パリ
+french guiana/cayenne/フランス領ギアナ/カイエンヌ
+gabon/libreville/ガボン/リーブルヴィル
+georgia/tbilisi/ジョージア/トビリシ
+Germany/Berlin/ドイツ/ベルリン
+ghana/accra/ガーナ/アクラ
+greece/athens/ギリシャ/アテネ
+guatemala/guatemala city/グアテマラ/グアテマラシティ
+guinea-bissau/bissau/ギニアビサウ共和国/ビサウ
+guinea/conakry/ギニア共和国/コナクリ
+guyana/georgetown/ガイアナ/ジョージタウン
+haiti/port-au-prince/ハイチ共和国/ポルトープランス
+honduras/tegucigalpa/ホンジュラス/テグシガルパ
+hungary/budapest/ハンガリー/ブダペスト
+iceland/reykjavik/アイスランド/レイキャビク
+india/deli/インド/デリー
+indonesia/jakarta/インドネシア/ジャカルタ
+iran/tehran/イラン/テヘラン
+iraq/baghdad/イラク/バグダッド
+ireland/dublin/アイルランド/ダブリン
+israel/jerusalem/イスラエル/エルサレム
+italy/rome/イタリア/ローマ
+jamaica/kingston/ジャマイカ/キングストン
+japan/tokyo/日本/東京
+jordan/amman/ヨルダン/アンマン
+kazakhstan/nur-sultan/カザフスタン/ヌルスタン
+kenya/nairobi/ケニア/ナイロビ
+korea/seoul/韓国/ソウル
+kosovo/prishtina/コソボ共和国/プリシュティナ
+kwait/kwait city/クウェート/クウェートシティ
+kyrgyzstan/bishkek/キルギス共和国/ビシュケク
+laos/vientiane/ラオス/ビエンチャン
+latbia/riga/ラトビア/リガ
+lebanon/beirut/レバノン/ベイルート
+liberia/monrovia/リベリア/モンロビア
+libya/tripoli/リビア/トリポリ
+lithuania/vilnius/リトアニア/ヴィリニュス
+madagascar/antananarivo/マダガスカル/アンタナナリボ
+malawi/lilongwe/マラウィ/リロングウェ
+malaysia/kuala lumpur/マレーシア/クアラルンプール
+mali/bamako/マリ共和国/バマコ
+mauritania/nouakchott/モーリタニア・イスラム共和国/ヌアクショット
+mexico/mexico city/メキシコ/メキシコシティ
+moldova/chisinau/モルドバ共和国/キシナウ
+mongolia/Ulaanbaatar/モンゴル/ウランバートル
+montenegro/podgorica/モンテネグロ/ポドゴリツァ
+morocco/rabat/モロッコ王国/ラバト
+mozambique/maputo/モザンビーク共和国/マプト
+myanmar/naypyitaw/ミャンマー連邦共和国/ネピドー
+namibia/windhoek/ナミビア共和国/ウィントフック
+nepal/kathmandu/ネパール/カトマンズ
+netherlands/amsterdam/オランダ/アムステルダム
+new caledonia/noumea/ニューカレドニア/ヌメア
+new zealand/wellington/ニュージーランド/ウェリントン
+nicaragua/managua/ニカラグア共和国/マナグア
+niger/niamey/ニジェール共和国/ニアメ
+nigeria/abuja/ナイジェリア連邦共和国/アブジャ
+north korea/pyongyang/朝鮮民主主義人民共和国/ピョンヤン
+north macedonia/skopje/北マケドニア共和国/スコピエ
+norway/oslo/ノルウェー/オスロ
+oman/muscat/オマーン/マスカット
+pakistan/isramabad/パキスタン・イスラム共和国/イスラマバード
+papua new guinea/port moresby/パプアニューギニア/ポートモレスビー
+paraguay/asuncion/パラグアイ/アスンシオン
+peru/lima/ペルー/リマ
+philippines/manila/フィリピン/マニラ
+poland/warsaw/ポーランド共和国/ワルシャワ
+portugal/lisbon/ポルトガル共和国/リスボン
+puerto rico/san juan/プエルトリコ自治連邦区/サンフアン
+qatar/doha/カタール/ドーハ
+republic of the congo/brazzaville/コンゴ共和国/ブラザビル
+romania/bucharest/ルーマニア/ブカレスト
+russia/moscow/ロシア連邦/モスクワ
+rwanda/kigali/ルワンダ/キガリ
+samoa islands/apia/サモア独立国/アピア
+saudi arabia/riyadh/サウジアラビア/リヤド
+senegal/dakar/セネガル/ダカール
+serbia/belgrade/セルビア共和国/ベオグラード
+sierra leone/freetown/シエラレオネ共和国/フリータウン
+slovakia/bratislava/スロバキア/ブラチスラバ
+slovenia/ljubljana/スロベニア共和国/リュブリャナ
+solomon islands/honiara/ソロモン諸島/ホニアラ
+somalia/mogadishu/ソマリア連邦共和国/モガディシュ
+south africa/cape town/南アフリカ共和国/ケープタウン
+south sudan/juda/南スーダン共和国/ジュバ
+spain/madrid/スペイン王国/マドリード
+sri lanka/sri jayawardenepura kotte/スリランカ民主社会主義共和国/スリジャヤワルダナプラコッテ
+sudan/khartoum/スーダン共和国/ハルツーム
+suriname/paramaribo/スリナム共和国/パラマリボ 
+sweden/stockholm/スウェーデン王国/ストックホルム
+switzerland/bern/スイス連邦/ベルン
+syria/damascus/シリア・アラブ共和国/ダマスカス
+tajikistan/dushanbe/タジキスタン共和国/ドゥシャンベ 
+tanzania/dodoma/タンザニア連合共和国/ドドマ
+thailand/bangkok/タイ王国/バンコク
+the bahamas/nissau/バハマ国/ナッソー
+the gambia/banjul/ガンビア共和国/バンジュダール
+togo/lome/トーゴ共和国/ロメ
+trinidad and tobago/port of spain/トリニダード・トバゴ共和国/ポートオブスペイン
+tunigia/tunis/チュニジア共和国/チュニス
+turkey/ankara/トルコ共和国/アンカラ
+turkmenistan/ashgabat/トルクメニスタン/アシガバート
+uganda/kampala/ウガンダ/カンパラ
+ukraine/kyiv/ウクライナ/キエフ
+united arab emirates/abu dhabi/アラブ首長国連邦/アブダビ
+united kingdom/london/イギリス/ロンドン
+united states/Washington, D.C./アメリカ合衆国/ワシントンD.C.
+uruguay/montevideo/ウルグアイ/モンテネグロ
+uzbekistan/tashkent/ウズベキスタン/タシケント
+vanuatu/port vila/バヌアツ共和国/ポートビラ 
+venezuela/caracas/ベネズエラ・ボリバル共和国/カラカス
+vietnam/hanoi/ベトナム社会主義共和国/ハノイ
+yemen/sana'a/イエメン共和国/サナア
+zambia/lusaka/ザンビア共和国/ルサカ
+zimbabwe/harare/ジンバブエ共和国/ハラレ 

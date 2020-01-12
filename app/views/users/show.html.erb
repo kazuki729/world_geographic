@@ -4,34 +4,35 @@
         <div></div>
         <p>WorldGeographic</p>
     </div>
-    <p class="menu-show">ユーザー情報</p>
+    <p class="menu-show lang0">ユーザー情報</p>
     <p class="name"><%= @user.name %></p>
     <p class="email"><%= @user.email %></p>
     <hr>
-    <p class="menu-show">クリア状況</p>
+    <p class="menu-show lang1">クリア状況</p>
     <div class="caption">
-      <div id="game1">国当て</div>
-      <div id="game2">首都当て</div>
+      <div id="game1" class="lang2">国当て</div>
+      <div id="game2" class="lang3">首都当て</div>
     </div>
     <div class="summary">
       <div id="total1">--</div><!-- 60カ国 -->
       <div id="total2">--</div><!-- 90カ国 -->
     </div>
     <table> <!-- 表 -->
-      <tr><td>地域別</td><td>国</td><td>首都</td></tr>
-      <tr><th>ヨーロッパ</th><th id="A1">--</th><th id="A2">--</th></tr>
-      <tr><th>アジア</th><th id="B1">--</th><th id="B2">--</th></tr>
-      <tr><th>アフリカ</th><th id="C1">--</th><th id="C2">--</th></tr>
-      <tr><th>北アメリカ</th><th id="D1">--</th><th id="D2">--</th></tr>
-      <tr><th>南アメリカ</th><th id="E1">--</th><th id="E2">--</th></tr>
-      <tr><th>オセアニア</th><th id="F1">--</th><th id="F2">--</th></tr>
+      <tr><td class="lang4">地域別</td><td class="lang5">国</td><td class="lang6">首都</td></tr>
+      <tr><th class="lang7">ヨーロッパ</th><th id="A1">--</th><th id="A2">--</th></tr>
+      <tr><th class="lang8">アジア</th><th id="B1">--</th><th id="B2">--</th></tr>
+      <tr><th class="lang9">アフリカ</th><th id="C1">--</th><th id="C2">--</th></tr>
+      <tr><th class="lang10">北アメリカ</th><th id="D1">--</th><th id="D2">--</th></tr>
+      <tr><th class="lang11">南アメリカ</th><th id="E1">--</th><th id="E2">--</th></tr>
+      <tr><th class="lang12">オセアニア</th><th id="F1">--</th><th id="F2">--</th></tr>
     </table>
     <hr>
-    <%= link_to "メイン画面", '/', class: "link", data: {"turbolinks" => false} %>
+    <%= link_to "", '/', class: "return-icon", data: {"turbolinks" => false} %>
+    <div class="setting-icon"></div>
   </div>
 
   <div class="right-space"><!-- 画面右側のスペース -->
-    <h1>国名一覧</h1>
+    <h1 class="lang13">国名一覧</h1>
     <div class="container">
       <div class="row text-center mt-5">
         <div class="col-3" id="column1">
@@ -45,18 +46,64 @@
       </div>
     </div>
   </div>
-</div>
+</div><!-- 画面右側のスペース -->
+
+<div class="setting"><!-- 設定ウィンドウ -->
+  <h1 class="lang14">設定</h1>
+  <hr class="hr1">
+  <div class="set-wrapper">
+    <span class="setting-item lang15">ゲーム画面の壁紙変更</span>
+    <div class="set-button">
+      <%= form_tag '/PostPhoto', method: 'post', id: 'upload_form', multipart: true do %>
+        <label for="loadFile">
+          <span class="btn btn-primary lang16">変更</span><input type="file" name="fileupload[file]" id="loadFile" accept=".jpg, .png, .bmp">
+        </label>
+      <% end %>
+    </div>
+      <div class="pre-wrap">
+        <img id="preview" src="/icon_header.png">
+      </div>
+  </div>
+  <hr class="hr2">
+  <div class="set-wrapper">
+    <span class="setting-item lang17">ゲーム情報のクリア</span>
+    <label class="set-button">
+      <span class="btn btn-primary lang18" id="data-clear" disabled>実行</span>
+    </label>
+  </div>
+  <hr class="hr2">
+  <div class="set-wrapper">
+    <span class="setting-item lang19">表示言語</span>
+    <div class="set-button">
+      <select name="language" class="set-language" id="set-language">
+        <option value="Japanese">Japanese</option>
+        <option value="English">English</option>
+      </select>
+    </div>
+  </div>
+  <hr class="hr2">
+  <span class="btn btn-primary close-setting lang20">閉じる</span>
+</div><!-- 設定ウィンドウ -->
+<div class="modal-overay"></div>
 
 <script>
   var country_table = []; //japan/tokyo/Asia/[座標]
   var country_list=[]; //japan
   var capital_list=[]; //tokyo
   var region_list=[]; //Asia
+  var country_list_Jap =[]; //国名リスト（日本語）
+  var capital_list_Jap=[]; //首都名リスト（日本語）
+  var country_list_Eng =[]; //国名リスト（英語）
+  var capital_list_Eng=[]; //首都名リスト（英語）
   var country_region = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての国名を格納する
   var capital_region = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての首都名を格納する
+  var country_region_Jap = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての国名を格納する
+  var capital_region_Jap = {Europe: [], Asia: [],Africa: [], Oceania: [],NorthAmerica: [], SouthAmerica: []} //全ての首都名を格納する
   var clear_game1 = "<%= @ClearGame1 %>"; //controllerから情報取得（game1クリア情報）
   var clear_game2 = "<%= @ClearGame2 %>"; //controllerから情報取得（game2クリア情報）
-  
+  var language = "<%= @language %>";
+  var lines = "" //languageファイルの内容
+
   if(clear_game1 ==""){
       clear_game1=[]
   }else{
@@ -68,196 +115,486 @@
       clear_game2 = clear_game2.split(',');
   }
 
+  ReadLanguageCountryFile("/country_img/country_jap.txt")
+  ReadLanguageFile("/language_show.txt")
   readTextFile("/country_img/country.txt")
   
-  function readTextFile(file){
-        var rawFile = new XMLHttpRequest();
-        var allText = "";
-        rawFile.open("GET", file, true);
-        //以下３行はキャッシュから取得しない設定
-        rawFile.setRequestHeader('Pragma', 'no-cache');
-        rawFile.setRequestHeader('Cache-Control', 'no-cache');
-        rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+  $('.setting-icon').click(function(){
+    $('.setting').css({ display:'initial',} );
+    $('.modal-overay').css({ display:'initial',});
+    $("#preview").attr('src', '/wallpaper');
+    $("#set-language").val(language);
+  })
+  $('.close-setting').click(function(){
+    $('.setting').css({ display:'none',});
+    $('.modal-overay').css({ display:'none',});
+  })
+  $('.modal-overay').click(function(){
+    $('.setting').css({ display:'none',});
+    $('.modal-overay').css({ display:'none',});
+  })
+  $('#data-clear').click(function(){
+    // var text = $("#data-clear").text();
+    var bool = $("#data-clear").hasClass('disabled');
+    var str =""
+    if(language=="Japanese"){
+      str="ゲームクリア情報を削除しますか？"
+    }else{
+      str="Are you sure you want to delete?"
+    }
+    if( !bool && window.confirm(str)){
+      $('#data-clear').addClass('disabled'); //ボタンを非アクティブにする
+      removeRecord() //DBに削除リクエスト送信（非同期）
+    }else{
+    }
+  })
 
-        rawFile.onreadystatechange = function (){
-            // dispLoading("データ取得中．．．")
-            if(rawFile.readyState === 4){
-                if(rawFile.status === 200 || rawFile.status == 0){
-                    allText = rawFile.responseText;
-                    country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
-                    country_table = country_table.filter(Boolean); //空白除去
-                    read_country_info()
-                    display_list('column1')
-                    display_list('column2')
-                    display_list('column3')
-                    display_list('column4')
-                    clear_summary1()
-                    clear_summary2()
-                }else{
-                    allText="失敗"
-                    alert("データ取得失敗")
-                }
+  function readTextFile(file){
+      var rawFile = new XMLHttpRequest();
+      var allText = "";
+      rawFile.open("GET", file, true);
+      //以下３行はキャッシュから取得しない設定
+      rawFile.setRequestHeader('Pragma', 'no-cache');
+      rawFile.setRequestHeader('Cache-Control', 'no-cache');
+      rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+
+      rawFile.onreadystatechange = function (){
+          // dispLoading("データ取得中．．．")
+          if(rawFile.readyState === 4){
+              if(rawFile.status === 200 || rawFile.status == 0){
+                  allText = rawFile.responseText;
+                  country_table = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
+                  country_table = country_table.filter(Boolean); //空白除去
+                  read_country_info()
+                  display_list('column1')
+                  display_list('column2')
+                  display_list('column3')
+                  display_list('column4')
+                  clear_summary1()
+                  clear_summary2()
+              }else{
+                  allText="失敗"
+                  alert("データ取得失敗")
+              }
+          }
+      }
+      rawFile.send(null);
+  }
+
+  //国名・首都名の翻訳ファイルを取得（非同期）
+  function ReadLanguageCountryFile(file){
+    var rawFile = new XMLHttpRequest();
+    var allText = "";
+    var temp =[];
+    rawFile.open("GET", file, true);
+    //以下３行はキャッシュから取得しない設定
+    rawFile.setRequestHeader('Pragma', 'no-cache');
+    rawFile.setRequestHeader('Cache-Control', 'no-cache');
+    rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+    rawFile.onreadystatechange = function (){
+        if(rawFile.readyState === 4){
+            if(rawFile.status === 200 || rawFile.status == 0){
+                allText = rawFile.responseText;
+                temp = allText.split(/\n/) //「japan/tokyo/[1022,2091]」改行コードで配列化
+                temp = temp.filter(Boolean); //空白除去
+                temp.forEach(function( line ) {
+                    var item = line.split('/');
+                    country_list_Eng.push(item[0])
+                    capital_list_Eng.push(item[1])
+                    country_list_Jap.push(item[2])
+                    capital_list_Jap.push(item[3])
+                });
+            }else{
+                alert("データ取得失敗")
             }
         }
-        rawFile.send(null);
     }
+    rawFile.send(null);
+  }
 
-    function read_country_info(){
-      country_table.forEach(function( str ) {
-        var country = str.split('/');
-        if(country[0] != ""){ //空白は表示しない（ファイルの最終行に改行があるため）
-          country_list.push(country[0])
-          capital_list.push(country[1])
-          region_list.push(country[2])
-          region_summary(country_region,capital_region,country[0],country[1],country[2])
-        }
-      });
-    }
+  function read_country_info(){
+    var index = 0;
+    country_table.forEach(function( str ) {
+      var country = str.split('/');
+      if(country[0] != ""){ //空白は表示しない（ファイルの最終行に改行があるため）
+        country_list.push(country[0])
+        capital_list.push(country[1])
+        region_list.push(country[2])
+        region_summary(country_region,capital_region,country[0],country[1],country[2],country_list_Jap[index],capital_list_Jap[index])
+      }
+      index++;
+    });
+  }
 
-    function region_summary(country_region,capital_region,country,capital,region_key){
-        switch(region_key){
-            case "Europe":
-                country_region["Europe"].push(country)
-                capital_region["Europe"].push(capital)
-                break;
-            case "Asia":
-                country_region["Asia"].push(country)
-                capital_region["Asia"].push(capital)
-                break;
-            case "Africa":
-                country_region["Africa"].push(country)
-                capital_region["Africa"].push(capital)
-                break;
-            case "Oceania":
-                country_region["Oceania"].push(country)
-                capital_region["Oceania"].push(capital)
-                break;
-            case "NorthAmerica":
-                country_region["NorthAmerica"].push(country)
-                capital_region["NorthAmerica"].push(capital)
-                break;
-            case "SouthAmerica":
-                country_region["SouthAmerica"].push(country)
-                capital_region["SouthAmerica"].push(capital)
-                break;
-        }
-    }
+  function region_summary(country_region,capital_region,country,capital,region_key,country_jap,capital_jap){
+      switch(region_key){
+          case "Europe":
+              country_region["Europe"].push(country)
+              capital_region["Europe"].push(capital)
+              country_region_Jap["Europe"].push(country_jap)
+              capital_region_Jap["Europe"].push(capital_jap)
+              break;
+          case "Asia":
+              country_region["Asia"].push(country)
+              capital_region["Asia"].push(capital)
+              country_region_Jap["Asia"].push(country_jap)
+              capital_region_Jap["Asia"].push(capital_jap)
+              break;
+          case "Africa":
+              country_region["Africa"].push(country)
+              capital_region["Africa"].push(capital)
+              country_region_Jap["Africa"].push(country_jap)
+              capital_region_Jap["Africa"].push(capital_jap)
+              break;
+          case "Oceania":
+              country_region["Oceania"].push(country)
+              capital_region["Oceania"].push(capital)
+              country_region_Jap["Oceania"].push(country_jap)
+              capital_region_Jap["Oceania"].push(capital_jap)
+              break;
+          case "NorthAmerica":
+              country_region["NorthAmerica"].push(country)
+              capital_region["NorthAmerica"].push(capital)
+              country_region_Jap["NorthAmerica"].push(country_jap)
+              capital_region_Jap["NorthAmerica"].push(capital_jap)
+              break;
+          case "SouthAmerica":
+              country_region["SouthAmerica"].push(country)
+              capital_region["SouthAmerica"].push(capital)
+              country_region_Jap["SouthAmerica"].push(country_jap)
+              capital_region_Jap["SouthAmerica"].push(capital_jap)
+              break;
+      }
+  }
 
-    function display_list(column){
-        var element = "";
-        var html_source = '';
-        switch(column){
-            case "column1":
+  function display_list(column){
+      var element = "";
+      var html_source = '';
+      switch(column){
+          case "column1":
+              if(language=="Japanese"){
+                html_source = '<h4>ヨーロッパ</h4><hr style="border-color:white;"><p>'
+              }else{
                 html_source = '<h4>Europe</h4><hr style="border-color:white;"><p>'
-                element = document.getElementById("column1");
-                var Len = country_region["Europe"].length-1;
-                for(var i=0; i<=Len; i++){
+              }
+              element = document.getElementById("column1");
+              var Len = country_region["Europe"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["Europe"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["Europe"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["Europe"][i] + '<br><span style="color:gray;">(' + capital_region["Europe"][i] + ')</span></p><p>';
-                };
-                break;
-            case "column2":
-              html_source = '<h4>Asia</h4><hr style="border-color:white;"><p>'
-                element = document.getElementById("column2");
-                var Len = country_region["Asia"].length-1;
-                for(var i=0; i<=Len; i++){
+                }
+              };
+              break;
+          case "column2":
+              if(language=="Japanese"){
+                html_source = '<h4>アジア</h4><hr style="border-color:white;"><p>'
+              }else{
+                html_source = '<h4>Asia</h4><hr style="border-color:white;"><p>'
+              }
+              element = document.getElementById("column2");
+              var Len = country_region["Asia"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["Asia"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["Asia"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["Asia"][i] + '<br><span style="color:gray;">(' + capital_region["Asia"][i] + ')</span></p><p>';
-                };
-                break;
-            case "column3":
+                }
+              };
+              break;
+          case "column3":
+              if(language=="Japanese"){
+                html_source = '<h4>アフリカ</h4><hr style="border-color:white;"><p>'
+              }else{
                 html_source = '<h4>Africa</h4><hr style="border-color:white;"><p>'
-                element = document.getElementById("column3");
-                var Len = country_region["Africa"].length-1;
-                for(var i=0; i<=Len; i++){
+              }
+              element = document.getElementById("column3");
+              var Len = country_region["Africa"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["Africa"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["Africa"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["Africa"][i] + '<br><span style="color:gray;">(' + capital_region["Africa"][i] + ')</span></p><p>';
-                };
-                break;
-            case "column4":
+                }
+              };
+              break;
+          case "column4":
+              if(language=="Japanese"){
+                html_source = '<h4>北アメリカ</h4><hr style="border-color:white;"><p>'
+              }else{
                 html_source = '<h4>NorthAmerica</h4><hr style="border-color:white;"><p>'
-                element = document.getElementById("column4");
-                var Len = country_region["NorthAmerica"].length-1;
-                for(var i=0; i<=Len; i++){
+              }
+              element = document.getElementById("column4");
+              var Len = country_region["NorthAmerica"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["NorthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["NorthAmerica"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["NorthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region["NorthAmerica"][i] + ')</span></p><p>';
-                };
+                }
+              };
+              if(language=="Japanese"){
+                html_source += '</p><h4>南アメリカ</h4><hr style="border-color:white;"><p>'
+              }else{
                 html_source += '</p><h4>SouthAmerica</h4><hr style="border-color:white;"><p>'
-                Len = country_region["SouthAmerica"].length-1;
-                for(var i=0; i<=Len; i++){
+              }
+              Len = country_region["SouthAmerica"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["SouthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["SouthAmerica"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["SouthAmerica"][i] + '<br><span style="color:gray;">(' + capital_region["SouthAmerica"][i] + ')</span></p><p>';
-                };
+                }
+              };
+              if(language=="Japanese"){
+                html_source += '</p><h4>オセアニア</h4><hr style="border-color:white;"><p>'
+              }else{
                 html_source += '</p><h4>Oceania</h4><hr style="border-color:white;"><p>'
-                Len = country_region["Oceania"].length-1;
-                for(var i=0; i<=Len; i++){
+              }
+              Len = country_region["Oceania"].length-1;
+              for(var i=0; i<=Len; i++){
+                if(language=="Japanese"){
+                  html_source += country_region_Jap["Oceania"][i] + '<br><span style="color:gray;">(' + capital_region_Jap["Oceania"][i] + ')</span></p><p>';
+                }else{
                   html_source += country_region["Oceania"][i] + '<br><span style="color:gray;">(' + capital_region["Oceania"][i] + ')</span></p><p>';
-                };
-                break;
-        }
-        element.innerHTML = html_source;
-    }
-    function clear_summary1(){
-      var Len = clear_game1.length-1
-      var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
-      for(var i=0; i<=Len; i++){
-        var index = country_list.indexOf(clear_game1[i])
-        switch(region_list[index]){
-            case "Europe":
-                count["Europe"]++;
-                break;
-            case "Asia":
-                count["Asia"]++;
-                break;
-            case "Africa":
-                count["Africa"]++;
-                break;
-            case "Oceania":
-                count["Oceania"]++;
-                break;
-            case "NorthAmerica":
-                count["NorthAmerica"]++;
-                break;
-            case "SouthAmerica":
-                count["SouthAmerica"]++;
-                break;
-        }
-      };
+                }
+              };
+              break;
+      }
+      element.innerHTML = html_source;
+  }
+  function clear_summary1(){
+    var Len = clear_game1.length-1
+    var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
+    for(var i=0; i<=Len; i++){
+      var index = country_list.indexOf(clear_game1[i])
+      switch(region_list[index]){
+          case "Europe":
+              count["Europe"]++;
+              break;
+          case "Asia":
+              count["Asia"]++;
+              break;
+          case "Africa":
+              count["Africa"]++;
+              break;
+          case "Oceania":
+              count["Oceania"]++;
+              break;
+          case "NorthAmerica":
+              count["NorthAmerica"]++;
+              break;
+          case "SouthAmerica":
+              count["SouthAmerica"]++;
+              break;
+      }
+    };
+    if(language=="Japanese"){
       document.getElementById("total1").innerHTML = clear_game1.length + 'カ国'
-      document.getElementById("A1").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
-      document.getElementById("B1").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
-      document.getElementById("C1").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
-      document.getElementById("D1").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
-      document.getElementById("E1").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
-      document.getElementById("F1").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+    }else{
+      if(clear_game1.length<=1){
+        document.getElementById("total1").innerHTML = clear_game1.length + 'country'
+      }else{
+        document.getElementById("total1").innerHTML = clear_game1.length + 'countries'
+      }
     }
-    function clear_summary2(){
-      var Len = clear_game2.length-1
-      var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
-      for(var i=0; i<=Len; i++){
-        var index = country_list.indexOf(clear_game2[i])
-        switch(region_list[index]){
-            case "Europe":
-                count["Europe"]++;
-                break;
-            case "Asia":
-                count["Asia"]++;
-                break;
-            case "Africa":
-                count["Africa"]++;
-                break;
-            case "Oceania":
-                count["Oceania"]++;
-                break;
-            case "NorthAmerica":
-                count["NorthAmerica"]++;
-                break;
-            case "SouthAmerica":
-                count["SouthAmerica"]++;
-                break;
-        }
-      };
+    document.getElementById("A1").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
+    document.getElementById("B1").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
+    document.getElementById("C1").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
+    document.getElementById("D1").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
+    document.getElementById("E1").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
+    document.getElementById("F1").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+  }
+  function clear_summary2(){
+    var Len = clear_game2.length-1
+    var count = {Europe: 0, Asia: 0,Africa: 0, Oceania: 0,NorthAmerica: 0, SouthAmerica: 0}
+    for(var i=0; i<=Len; i++){
+      var index = country_list.indexOf(clear_game2[i])
+      switch(region_list[index]){
+          case "Europe":
+              count["Europe"]++;
+              break;
+          case "Asia":
+              count["Asia"]++;
+              break;
+          case "Africa":
+              count["Africa"]++;
+              break;
+          case "Oceania":
+              count["Oceania"]++;
+              break;
+          case "NorthAmerica":
+              count["NorthAmerica"]++;
+              break;
+          case "SouthAmerica":
+              count["SouthAmerica"]++;
+              break;
+      }
+    };
+    if(language=="Japanese"){
       document.getElementById("total2").innerHTML = clear_game2.length + 'カ国';
-      document.getElementById("A2").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
-      document.getElementById("B2").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
-      document.getElementById("C2").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
-      document.getElementById("D2").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
-      document.getElementById("E2").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
-      document.getElementById("F2").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+    }else{
+      if(clear_game2.length<=1){
+        document.getElementById("total2").innerHTML = clear_game2.length + 'country';
+      }else{
+        document.getElementById("total2").innerHTML = clear_game2.length + 'countries';
+      }
     }
+    document.getElementById("A2").innerHTML = count["Europe"] + '/' + country_region["Europe"].length;
+    document.getElementById("B2").innerHTML = count["Asia"] + '/' + country_region["Asia"].length;
+    document.getElementById("C2").innerHTML = count["Africa"] + '/' + country_region["Africa"].length;
+    document.getElementById("D2").innerHTML = count["NorthAmerica"] + '/' + country_region["NorthAmerica"].length;
+    document.getElementById("E2").innerHTML = count["SouthAmerica"] + '/' + country_region["SouthAmerica"].length;
+    document.getElementById("F2").innerHTML = count["Oceania"] + '/' + country_region["Oceania"].length;
+  }
+  
+  //非同期でDBデータを削除
+  function removeRecord(){
+      $.ajax({
+          type:'GET',
+          url: '/RemoveDB',
+      })
+      .done(function(data){
+        // 通信に成功した場合の処理です
+        if(language=="Japanese"){
+          $("#data-clear").text("クリア済")
+        }else{
+          $("#data-clear").text("done")
+        }
+        display_reset();
+      })
+      .fail(function(){
+        // 通信に失敗した場合の処理です
+        alert('非同期通信失敗！') //debug
+      })
+  }
+  // クリア情報の集計表示をリセット
+  function display_reset(){
+    clear_game1=""
+    clear_game2=""
+    clear_summary1()
+    clear_summary2()
+  }
+
+  //画像が選択された時に、サムネ表示＋DBに登録
+  $('#loadFile').on('change', function(e) {
+    //サムネイル表示
+    var filename = $('#loadFile').val()
+    if(filename == ""){
+      return
+    }
+    var reader = new FileReader();
+    reader.readAsDataURL(e.target.files[0]);
+    reader.onload = function (e) {
+        $("#preview").attr('src', e.target.result);
+    }
+    $('#upload_form').submit(); //form_tagのsubmitを発火
+  });
+  //画像アップロード（非同期）
+  $('#upload_form').on('submit', function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+    var url = $(this).attr('action')
+    $.ajax({
+      url: url,
+      type: 'POST',
+      data: formData,
+      dataType: 'json',
+      processData: false,
+      contentType: false
+    })
+    .done(function(data){
+    })
+    .fail(function(){
+      alert('画像保存失敗（非同期通信）')
+    })
+  })
+
+  //設定言語を変更
+  document.getElementById( 'set-language' ).onchange = function(){
+    // 選択されているoption要素を取得する
+    var selectedItem = $('.set-language option:selected').text();
+    UpdateDB(selectedItem)
+  }
+
+  //非同期でDBに登録
+  function UpdateDB(lang){
+    $.ajax({
+        type:'GET', // リクエストのタイプはGETです
+        url: '/ChangeLanguage', // URLは"/meals"を指定します
+        data: {language: lang}, // コントローラへフォームの値を送信します
+        dataType: 'json' // データの型はjsonで指定します
+    })
+    .done(function(data){
+        language = lang //内部変数変更
+        change_language(lines,language) //言語表示切り替え
+        display_list('column1') //国名一覧の表示変更
+        display_list('column2') //国名一覧の表示変更
+        display_list('column3') //国名一覧の表示変更
+        display_list('column4') //国名一覧の表示変更
+    })
+    .fail(function(){
+        alert('言語変更失敗（非同期通信）')
+    })
+  }
+
+  function ReadLanguageFile(file){
+    var rawFile = new XMLHttpRequest();
+    var allText = "";
+    rawFile.open("GET", file, true);
+    //以下３行はキャッシュから取得しない設定
+    rawFile.setRequestHeader('Pragma', 'no-cache');
+    rawFile.setRequestHeader('Cache-Control', 'no-cache');
+    rawFile.setRequestHeader('If-Modified-Since', 'Thu, 01 Jun 1970 00:00:00 GMT');
+    rawFile.onreadystatechange = function (){
+        // dispLoading("データ取得中．．．")
+        if(rawFile.readyState === 4){
+            if(rawFile.status === 200 || rawFile.status == 0){
+                allText = rawFile.responseText;
+                lines = allText.split(/\n/) //「class_name,English,Japanese」改行コードで配列化
+                lines = lines.filter(Boolean); //空白除去
+                lines.shift(); //ヘッダー行は削除
+                change_language(lines,language)
+            }else{
+                alert("データ取得失敗")
+            }
+        }
+    }
+    rawFile.send(null);
+  }
+
+  function change_language(lines,language){
+    if(language=='Japanese'){
+        lines.forEach(function( line ) {
+            var item = line.split(',');
+            $(item[0]).text(item[2])
+        });
+        var bool = $("#data-clear").hasClass('disabled');
+        if(bool){
+          $("#data-clear").text('クリア済')
+        }
+        document.getElementById("total1").innerHTML = clear_game1.length + 'カ国'
+        document.getElementById("total2").innerHTML = clear_game2.length + 'カ国';
+    }else{ //英語
+        lines.forEach(function( line ) {
+            var item = line.split(',');
+            $(item[0]).text(item[1])
+        });
+        if(bool){
+          var bool = $("#data-clear").hasClass('disabled');
+          $("#data-clear").text('done')
+        }
+        if(clear_game2.length<=1){
+          document.getElementById("total2").innerHTML = clear_game2.length + 'country';
+        }else{
+          document.getElementById("total2").innerHTML = clear_game2.length + 'countries';
+        }
+        if(clear_game1.length<=1){
+          document.getElementById("total1").innerHTML = clear_game1.length + 'country'
+        }else{
+          document.getElementById("total1").innerHTML = clear_game1.length + 'countries'
+        }
+    }
+  }
 </script>
